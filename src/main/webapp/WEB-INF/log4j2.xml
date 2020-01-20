@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+        </Console>
+        <RollingFile name="RollingFile" fileName="logs/dkfz-webtool.log" filePattern="logs/dkfz-webtool-%d{yyyy-MM-dd}.log.gz" ignoreExceptions="false">
+			<PatternLayout>
+<!-- 				<Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} %m%n</Pattern> -->
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss} [%t] %-5p: %c - %m%n</Pattern>
+			</PatternLayout>
+			<TimeBasedTriggeringPolicy />
+		</RollingFile>
+        
+    </Appenders>
+    <Loggers>
+        <Root level="warn">
+<!--             <AppenderRef ref="Console" /> -->
+            <AppenderRef ref="RollingFile"/>
+        </Root>
+    </Loggers>
+</Configuration>

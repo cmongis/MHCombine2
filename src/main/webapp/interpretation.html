@@ -1,0 +1,83 @@
+<html>
+<head>
+<title>MHCcombine Web-Application 1.0</title>
+
+  <!-- Loading Bootstrap -->
+    <link href="css/vendor/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Loading Flat UI -->
+    <link href="css/flat-ui.min.css" rel="stylesheet">
+
+    <link rel="shortcut icon" href="img/MHCcombine-icon2.ico">
+	
+	<!-- jQuery (necessary for Flat UI's JavaScript plugins) -->
+    <script src="js/vendor/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/vendor/video.js"></script>
+    <script src="js/flat-ui.min.js"></script>
+	
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements. All other JS at the end of file. -->
+    <!--[if lt IE 9]>
+      <script src="js/vendor/html5shiv.js"></script>
+      <script src="js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+
+</head>
+
+<body>
+
+<!-- MB: Navigationszeile oben -->    
+<nav class="navbar navbar-default" role="navigation">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <a class="navbar-brand" href="#"><img src="Logo-klein.png" width="100%" height="100%" alt="MHCcombineLogo"></a>
+      <ul class="nav navbar-nav">
+        <li><a href="index.html">MHCcombine<span class="sr-only">(current)</span></a></li>
+        <li><a href="cite.html">How to cite</a></li>
+        <li><a href="help.html">How to use</a></li>
+		<li><a href="interpretation.html">How to interpret</a></li>
+		<li><a href="recommendations.html">Recommendations</a></li>
+		<li><a href="links.html">Links</a></li>
+		<li><a class="navbar-brand" href="https://www.dkfz.de/"><img src="DKFZ_Logo.png" width="100%" height="100%" alt="DKFZLogo"></a></li>
+      </ul>
+      
+    </div><!-- /.navbar-c*ollapse --><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+<div class="container">
+<h4>How to interpret</h4>
+<br>
+<h6>How to understand the output</h6>
+After converting the .csv-file into a spreadsheet (see <a href="help.html">How to use</a>) it should look like this:
+<br><img src="Howtouse_6.jpg" style="width:100%">
+<br><br>We recommend transforming the data field into a table to easily sort for best predictions.
+<br><br>The columns contain the following information:
+<li><b>Position Start:</b> the position of the first amino acid of the predicted peptide within the input sequence</li>
+<li><b>Region:</b> the start and end position of the predicted peptide</li>
+<li><b>Length:</b> the length of the predicted peptide</li>
+<li><b>Sequence:</b> the amino acid sequence of the predicted peptide</li>
+<li><b>Algorithm Name:</b> the output values of the respective method</li>
+<br><b>"N/A"</b> means that a peptide is not predicted by the server <br> e.g. if the server does not perform prediction of the chosen peptide length.
+<br><br><br>The output values of the prediction methods are:<br><br>
+<li><b>IC50 in nM (NetMHC methods, IEDB smm and IEDB smmpmbec):</b>
+<br>The lower the value, the stronger the binding affinity.<br>Usual thresholds are IC50 &le; 50nM (strong affinity) and IC50 &le; 500nM (low affinity).</li><br>
+<li><b>Percentile rank (IEDB recommended and IEDB consensus):</b>
+<br>The lower the value, the higher the chances of binding.<br>Usual thresholds are %-rank &le; 0.5 (strong affinity) and %-rank &le; 2 (low affinity).</li><br>
+<li><b>Score (SYFPEITHI):</b>
+<br>The higher the binding score, the higher the chances of binding.<br> SYFPEITHI does not recommend any threshold.</li>
+<br>
+<b>Please see <a href="recommendations.html">Recommendations</a> for information about increasing prediction sensitivity by using more tolerant thresholds.</b>
+
+ 
+<br><br><br><br>
+</div>
+</body>
+<footer>
+MHCcombine 1.0 was developed and is hosted at the Department for Immunotherapy and Immunoprevention at the German Cancer Research Center (DKFZ) in Heidelberg, Germany.<br>We would appreciate notes and comments to improve MHCcombine. <br>Please contact us at:<br><a href="mailto:mhccombine@dkfz-heidelberg.de">mhccombine@dkfz-heidelberg.de<br><br><br><img src="Logo-klein.png"></a>
+<br><br><br><a href="http://www.dkfz.de"><img src="DKFZ_Logo-klein.png"></a>
+<br><br><br><br></footer>

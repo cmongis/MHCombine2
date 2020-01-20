@@ -1,0 +1,923 @@
+<html>
+<head>
+<title>MHCcombine Web-Application 1.0</title>
+
+  <!-- Loading Bootstrap -->
+    <link href="css/vendor/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Loading Flat UI -->
+    <link href="css/flat-ui.min.css" rel="stylesheet">
+
+    <link rel="shortcut icon" href="img/MHCcombine-icon2.ico">
+	
+	<!-- jQuery (necessary for Flat UI's JavaScript plugins) -->
+    <script src="js/vendor/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/vendor/video.js"></script>
+    <script src="js/flat-ui.min.js"></script>
+	
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements. All other JS at the end of file. -->
+    <!--[if lt IE 9]>
+      <script src="js/vendor/html5shiv.js"></script>
+      <script src="js/vendor/respond.min.js"></script>
+    <![endif]-->
+<style></style>
+
+</head>
+
+<body>
+
+<!-- MB: Navigationszeile oben -->    
+<nav class="navbar navbar-default" role="navigation">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <a class="navbar-brand" href="#"><img src="Logo-klein.png" width="100%" height="100%" alt="MHCcombineLogo"></a>
+      <ul class="nav navbar-nav">
+        <li><a href="index.html">MHCcombine<span class="sr-only">(current)</span></a></li>
+        <li><a href="cite.html">How to cite</a></li>
+        <li><a href="help.html">How to use</a></li>
+		<li><a href="interpretation.html">How to interpret</a></li>
+		<li><a href="recommendations.html">Recommendations</a></li>
+		<li><a href="links.html">Links</a></li>
+		<li><a class="navbar-brand" href="https://www.dkfz.de/"><img src="DKFZ_Logo.png" width="100%" height="100%" alt="DKFZLogo"></a></li>
+      </ul>
+      
+    </div><!-- /.navbar-c*ollapse --><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+<div class="container">
+<h4>Recommendations</h4>
+<br>
+<h6>Optimize prediction sensitivity by following our recommendations:</h6>
+<br>Based on a dataset comprised of >750 experimentally validated MHC-peptide binding affinities for the proteins HPV16 E6 and HPV16 E7, we evaluated the performance of all prediction servers included in MHCcombine.<br>
+The detailed results of our analysis can be accessed via:<br><br>
+<p class="ref1" style="margin:0px;padding:0px">M. Bonsack, S. Hoppe, J. Winter, C. Zeller, M. D. K&uuml;pper, E. Schitter, R. Blatnik, A. B. Riemer</p>
+<p style="margin:0px;padding:0px; padding-bottom:12 px;font-style: normal; font-weight: bold;">Performance evaluation of MHC class-I binding prediction tools based on an experimentally validated MHC-peptide binding dataset.</p>
+<p style="margin:0px;padding:0px; font-style: italic;">submitted<br><br></p>
+We would recommend to use the following servers for the following purposes:<br>
+<br><table border = "1" width="80%">
+         <tr>
+            <th></th>
+			<th>pooled (8-11-mers)</th>
+            <th>8-mers</th>
+            <th>9-mers</th>
+			<th>10-mers</th>
+			<th>11-mers</th>
+         </tr>
+         <tr>
+            <th>HLA-A1</th>
+			<td>NetMHCpan 4.0</td>
+            <td>NetMHC 3.4</td>
+            <td>NetMHCpan 4.0</td>
+			<td>NetMHC 3.4</td>
+			<td>NetMHCpan 4.0</td>
+         </tr>
+         <tr>
+            <th>HLA-A2</th>
+			<td>NetMHCpan 4.0</td>
+            <td>NetMHC 4.0</td>
+            <td>NetMHCpan 4.0</td>
+			<td>IEDB SMMPMBEC</td>
+			<td>NetMHC 4.0</td>
+         </tr>
+		          <tr>
+            <th>HLA-A3</th>
+			<td>NetMHC 3.4</td>
+            <td>NetMHC 4.0</td>
+            <td>NetMHC 3.4</td>
+			<td>IEDB recommended</td>
+			<td>IEDB SMMPMBEC</td>
+         </tr>
+		          <tr>
+            <th>HLA-A11</th>
+			<td>IEDB recommended</td>
+            <td>NetMHCpan 4.0</td>
+            <td>NetMHC 4.0</td>
+			<td>IEDB recommended</td>
+			<td>IEDB recommended</td>
+         </tr>
+		          <tr>
+            <th>HLA-A24</th>
+			<td>NetMHCcons 1.1</td>
+            <td>NetMHCpan 4.0</td>
+            <td>NetMHCpan 4.0</td>
+			<td>NetMHCcons 1.1</td>
+			<td>IEDB recommended</td>
+         </tr>
+		          <tr>
+            <th>HLA-B7</th>
+			<td>NetMHCcons 1.1</td>
+            <td>IEDB recommended</td>
+            <td>IEDB recommended</td>
+			<td>NetMHCpan 3.0</td>
+			<td>NetMHC 3.4</td>
+         </tr>
+		          <tr>
+            <th>HLA-B15</th>
+			<td>NetMHCpan 4.0</td>
+            <td>NetMHCpan 3.0</td>
+            <td>NetMHCpan 3.0</td>
+			<td>NetMHC 4.0</td>
+			<td>NetMHCpan 4.0</td>
+         </tr>
+      </table><br>
+
+We found that many peptides are missed applying the thresholds recommended by the servers. To increase prediction sensitivity we recommend using the following more tolerant thresholds. Click on the prediction method to expand a table of thresholds.<br><br>
+<button class="collapsible"><b>NetMHC 4.0</b></button>
+<div class="content">
+
+      <br><table border = "1" width="80%">
+         <tr>
+            <th></th>
+			<th>pooled (8-11-mers)</th>
+            <th>8-mers</th>
+            <th>9-mers</th>
+			<th>10-mers</th>
+			<th>11-mers</th>
+         </tr>
+         <tr>
+            <th>HLA-A1</th>
+			<td>6706nM</td>
+            <td>11702nM</td>
+            <td>6706nM</td>
+			<td>3676nM</td>
+			<td>6323nM</td>
+         </tr>
+         <tr>
+            <th>HLA-A2</th>
+			<td>6937nM</td>
+            <td>9129nM</td>
+            <td>1812nM</td>
+			<td>2566nM</td>
+			<td>11451nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A3</th>
+			<td>6962nM</td>
+            <td>10605nM</td>
+            <td>3476nM</td>
+			<td>1603nM</td>
+			<td>234nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A11</th>
+			<td>9342nM</td>
+            <td>9342nM</td>
+            <td>9086nM</td>
+			<td>1928nM</td>
+			<td>9183nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A24</th>
+			<td>13918nM</td>
+            <td>25903nM</td>
+            <td>7820nM</td>
+			<td>9078nM</td>
+			<td>20604nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-B7</th>
+			<td>13279nM</td>
+            <td>21900nM</td>
+            <td>6674nM</td>
+			<td>8988nM</td>
+			<td>13279nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-B15</th>
+			<td>6476nM</td>
+            <td>14126nM</td>
+            <td>2652nM</td>
+			<td>6140nM</td>
+			<td>6525nM</td>
+         </tr>
+      </table><br>
+</div>
+<button class="collapsible"><b>NetMHC 3.4</b></button>
+<div class="content">
+
+      <br><table border = "1" width="80%">
+         <tr>
+            <th></th>
+			<th>pooled (8-11-mers)</th>
+            <th>8-mers</th>
+            <th>9-mers</th>
+			<th>10-mers</th>
+			<th>11-mers</th>
+         </tr>
+         <tr>
+            <th>HLA-A1</th>
+			<td>9154nM</td>
+            <td>2008nM</td>
+            <td>5319nM</td>
+			<td>3631nM</td>
+			<td>11458nM</td>
+         </tr>
+         <tr>
+            <th>HLA-A2</th>
+			<td>6045nM</td>
+            <td>6045nM</td>
+            <td>7890nM</td>
+			<td>4749nM</td>
+			<td>4362nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A3</th>
+			<td>3086nM</td>
+            <td>752nM</td>
+            <td>3086nM</td>
+			<td>2536nM</td>
+			<td>955nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A11</th>
+			<td>6972nM</td>
+            <td>1354nM</td>
+            <td>13066nM</td>
+			<td>5497nM</td>
+			<td>6972nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A24</th>
+			<td>12453nM</td>
+            <td>7863nM</td>
+            <td>6548nM</td>
+			<td>14977nM</td>
+			<td>17668nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-B7</th>
+			<td>11903nM</td>
+            <td>16001nM</td>
+            <td>5180nM</td>
+			<td>5373nM</td>
+			<td>14182nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-B15</th>
+			<td>5050nM</td>
+            <td>2654nM</td>
+            <td>3786nM</td>
+			<td>4551nM</td>
+			<td>438nM</td>
+         </tr>
+      </table><br>
+</div>
+<button class="collapsible"><b>NetMHCpan 4.0</b></button>
+<div class="content">
+
+      <br><table border = "1" width="80%">
+         <tr>
+            <th></th>
+			<th>pooled (8-11-mers)</th>
+            <th>8-mers</th>
+            <th>9-mers</th>
+			<th>10-mers</th>
+			<th>11-mers</th>
+         </tr>
+         <tr>
+            <th>HLA-A1</th>
+			<td>8641nM</td>
+            <td>14781nM</td>
+            <td>3127nM</td>
+			<td>1548nM</td>
+			<td>8915nM</td>
+         </tr>
+         <tr>
+            <th>HLA-A2</th>
+			<td>8103nM</td>
+            <td>11632nM</td>
+            <td>4258nM</td>
+			<td>2254nM</td>
+			<td>12699nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A3</th>
+			<td>1365nM</td>
+            <td>12511nM</td>
+            <td>8302nM</td>
+			<td>1365nM</td>
+			<td>132nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A11</th>
+			<td>7720nM</td>
+            <td>7720nM</td>
+            <td>7399nM</td>
+			<td>2783nM</td>
+			<td>5361nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A24</th>
+			<td>14268nM</td>
+            <td>33856nM</td>
+            <td>12844nM</td>
+			<td>12098nM</td>
+			<td>22982nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-B7</th>
+			<td>14911nM</td>
+            <td>5515nM</td>
+            <td>14911nM</td>
+			<td>5644nM</td>
+			<td>17527nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-B15</th>
+			<td>6790nM</td>
+            <td>7695nM</td>
+            <td>4782nM</td>
+			<td>7669nM</td>
+			<td>5189nM</td>
+         </tr>
+      </table><br>
+</div>
+<button class="collapsible"><b>NetMHCpan 3.0</b></button>
+<div class="content">
+
+      <br><table border = "1" width="80%">
+         <tr>
+            <th></th>
+			<th>pooled (8-11-mers)</th>
+            <th>8-mers</th>
+            <th>9-mers</th>
+			<th>10-mers</th>
+			<th>11-mers</th>
+         </tr>
+         <tr>
+            <th>HLA-A1</th>
+			<td>7097nM</td>
+            <td>15251nM</td>
+            <td>1900nM</td>
+			<td>2246nM</td>
+			<td>2745nM</td>
+         </tr>
+         <tr>
+            <th>HLA-A2</th>
+			<td>9681nM</td>
+            <td>9488nM</td>
+            <td>4734nM</td>
+			<td>2033nM</td>
+			<td>11935nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A3</th>
+			<td>5534nM</td>
+            <td>10537nM</td>
+            <td>8408nM</td>
+			<td>1769nM</td>
+			<td>163nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A11</th>
+			<td>7709nM</td>
+            <td>5309nM</td>
+            <td>980nM</td>
+			<td>1722nM</td>
+			<td>7709nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A24</th>
+			<td>12346nM</td>
+            <td>34571nM</td>
+            <td>12346nM</td>
+			<td>11145nM</td>
+			<td>18253nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-B7</th>
+			<td>14473nM</td>
+            <td>6605nM</td>
+            <td>6431nM</td>
+			<td>13277nM</td>
+			<td>14473nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-B15</th>
+			<td>7817nM</td>
+            <td>7375nM</td>
+            <td>4008nM</td>
+			<td>7103nM</td>
+			<td>3766nM</td>
+         </tr>
+      </table><br>
+</div>
+<button class="collapsible"><b>NetMHCpan 2.8</b></button>
+<div class="content">
+
+      <br><table border = "1" width="80%">
+         <tr>
+            <th></th>
+			<th>pooled (8-11-mers)</th>
+            <th>8-mers</th>
+            <th>9-mers</th>
+			<th>10-mers</th>
+			<th>11-mers</th>
+         </tr>
+         <tr>
+            <th>HLA-A1</th>
+			<td>5684nM</td>
+            <td>2191nM</td>
+            <td>2318nM</td>
+			<td>268nM</td>
+			<td>5158nM</td>
+         </tr>
+         <tr>
+            <th>HLA-A2</th>
+			<td>4923nM</td>
+            <td>2302nM</td>
+            <td>8538nM</td>
+			<td>4923nM</td>
+			<td>4715nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A3</th>
+			<td>2366nM</td>
+            <td>637nM</td>
+            <td>7002nM</td>
+			<td>2366nM</td>
+			<td>132nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A11</th>
+			<td>7354nM</td>
+            <td>349nM</td>
+            <td>6918nM</td>
+			<td>5277nM</td>
+			<td>7182nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A24</th>
+			<td>14229nM</td>
+            <td>10003nM</td>
+            <td>10229nM</td>
+			<td>12415nM</td>
+			<td>19060nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-B7</th>
+			<td>4553nM</td>
+            <td>1846nM</td>
+            <td>3666nM</td>
+			<td>3231nM</td>
+			<td>4553nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-B15</th>
+			<td>6047nM</td>
+            <td>2808nM</td>
+            <td>6047nM</td>
+			<td>10190nM</td>
+			<td>709nM</td>
+         </tr>
+      </table><br>
+</div>
+<button class="collapsible"><b>NetMHCcons 1.1</b></button>
+<div class="content">
+
+      <br><table border = "1" width="80%">
+         <tr>
+            <th></th>
+			<th>pooled (8-11-mers)</th>
+            <th>8-mers</th>
+            <th>9-mers</th>
+			<th>10-mers</th>
+			<th>11-mers</th>
+         </tr>
+         <tr>
+            <th>HLA-A1</th>
+			<td>7693nM</td>
+            <td>2100nM</td>
+            <td>3511nM</td>
+			<td>4552nM</td>
+			<td>7693nM</td>
+         </tr>
+         <tr>
+            <th>HLA-A2</th>
+			<td>5383nM</td>
+            <td>2328nM</td>
+            <td>8572nM</td>
+			<td>8712nM</td>
+			<td>5383nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A3</th>
+			<td>2000nM</td>
+            <td>693nM</td>
+            <td>4651nM</td>
+			<td>2000nM</td>
+			<td>355nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A11</th>
+			<td>7734nM</td>
+            <td>686nM</td>
+            <td>6830nM</td>
+			<td>4407nM</td>
+			<td>7093nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A24</th>
+			<td>13142nM</td>
+            <td>10028nM</td>
+            <td>10934nM</td>
+			<td>14565nM</td>
+			<td>20590nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-B7</th>
+			<td>7946nM</td>
+            <td>1092nM</td>
+            <td>4336nM</td>
+			<td>4175nM</td>
+			<td>7946nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-B15</th>
+			<td>5183nM</td>
+            <td>3220nM</td>
+            <td>5531nM</td>
+			<td>10875nM</td>
+			<td>558nM</td>
+         </tr>
+      </table><br>
+</div>
+<button class="collapsible"><b>Pickpocket 1.1</b></button>
+<div class="content">
+
+      <br><table border = "1" width="80%">
+         <tr>
+            <th></th>
+			<th>pooled (8-11-mers)</th>
+            <th>8-mers</th>
+            <th>9-mers</th>
+			<th>10-mers</th>
+			<th>11-mers</th>
+         </tr>
+         <tr>
+            <th>HLA-A1</th>
+			<td>5211nM</td>
+            <td>5211nM</td>
+            <td>1766nM</td>
+			<td>4289nM</td>
+			<td>7776nM</td>
+         </tr>
+         <tr>
+            <th>HLA-A2</th>
+			<td>954nM</td>
+            <td>736nM</td>
+            <td>561nM</td>
+			<td>705nM</td>
+			<td>954nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A3</th>
+			<td>2874nM</td>
+            <td>1551nM</td>
+            <td>1655nM</td>
+			<td>4990nM</td>
+			<td>1423nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A11</th>
+			<td>4063nM</td>
+            <td>3237nM</td>
+            <td>2417nM</td>
+			<td>4626nM</td>
+			<td>6683nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A24</th>
+			<td>5045nM</td>
+            <td>5100nM</td>
+            <td>1655nM</td>
+			<td>5211nM</td>
+			<td>24219nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-B7</th>
+			<td>2874nM</td>
+            <td>2340nM</td>
+            <td>462nM</td>
+			<td>1585nM</td>
+			<td>1766nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-B15</th>
+			<td>6756nM</td>
+            <td>3933nM</td>
+            <td>4831nM</td>
+			<td>10875nM</td>
+			<td>2444nM</td>
+         </tr>
+      </table><br>
+</div>
+<button class="collapsible"><b>IEDB recommended</b></button>
+<div class="content">
+
+      <br><table border = "1" width="80%">
+         <tr>
+            <th></th>
+			<th>pooled (8-11-mers)</th>
+            <th>8-mers</th>
+            <th>9-mers</th>
+			<th>10-mers</th>
+			<th>11-mers</th>
+         </tr>
+         <tr>
+            <th>HLA-A1</th>
+			<td>rank: 0.95</td>
+            <td>rank: 11.25</td>
+            <td>rank: 2.40</td>
+			<td>rank: 1.30</td>
+			<td>rank: 2.95</td>
+         </tr>
+         <tr>
+            <th>HLA-A2</th>
+			<td>rank: 10.35</td>
+            <td>rank: 1.00</td>
+            <td>rank: 14.00</td>
+			<td>rank: 6.60</td>
+			<td>rank: 16.05</td>
+         </tr>
+		          <tr>
+            <th>HLA-A3</th>
+			<td>rank: 6.65</td>
+            <td>rank: 3.45</td>
+            <td>rank: 2.70</td>
+			<td>rank: 3.50</td>
+			<td>rank: 6.65</td>
+         </tr>
+		          <tr>
+            <th>HLA-A11</th>
+			<td>rank: 8.85</td>
+            <td>rank: 11.05</td>
+            <td>rank: 5.70</td>
+			<td>rank: 6.15</td>
+			<td>rank: 8.85</td>
+         </tr>
+		          <tr>
+            <th>HLA-A24</th>
+			<td>rank: 7.45</td>
+            <td>rank: 6.20</td>
+            <td>rank: 3.15</td>
+			<td>rank: 5.35</td>
+			<td>rank: 19.90</td>
+         </tr>
+		          <tr>
+            <th>HLA-B7</th>
+			<td>rank: 4.15</td>
+            <td>rank: 17.90</td>
+            <td>rank: 2.50</td>
+			<td>rank: 3.50</td>
+			<td>rank: 1.10</td>
+         </tr>
+		          <tr>
+            <th>HLA-B15</th>
+			<td>rank: 5.80</td>
+            <td>rank: 3.60</td>
+            <td>rank: 8.20</td>
+			<td>rank: 14.75</td>
+			<td>rank: 0.90</td>
+         </tr>
+      </table><br>
+</div>
+<button class="collapsible"><b>IEDB consensus</b></button>
+<div class="content">
+
+      <br><table border = "1" width="80%">
+         <tr>
+            <th></th>
+			<th>pooled (8-11-mers)</th>
+            <th>8-mers</th>
+            <th>9-mers</th>
+			<th>10-mers</th>
+			<th>11-mers</th>
+         </tr>
+         <tr>
+            <th>HLA-A1</th>
+			<td>rank: 0.70</td>
+            <td>rank: 11.20</td>
+            <td>rank: 2.15</td>
+			<td>rank: 1.05</td>
+			<td>rank: 2.90</td>
+         </tr>
+         <tr>
+            <th>HLA-A2</th>
+			<td>rank: 9.25</td>
+            <td>rank: 0.80</td>
+            <td>rank: 8.70</td>
+			<td>rank: 6.20</td>
+			<td>rank: 9.25</td>
+         </tr>
+		          <tr>
+            <th>HLA-A3</th>
+			<td>rank: 11.35</td>
+            <td>rank: 3.15</td>
+            <td>rank: 2.90</td>
+			<td>rank: 11.35</td>
+			<td>rank: 6.60</td>
+         </tr>
+		          <tr>
+            <th>HLA-A11</th>
+			<td>rank: 7.45</td>
+            <td>rank: 10.65</td>
+            <td>rank: 5.00</td>
+			<td>rank: 4.85</td>
+			<td>rank: 7.45</td>
+         </tr>
+		          <tr>
+            <th>HLA-A24</th>
+			<td>rank: 7.55</td>
+            <td>rank: 3.85</td>
+            <td>rank: 2.80</td>
+			<td>rank: 5.00</td>
+			<td>rank: 21.95</td>
+         </tr>
+		          <tr>
+            <th>HLA-B7</th>
+			<td>rank: 4.20</td>
+            <td>rank: 17.85</td>
+            <td>rank: 2.50</td>
+			<td>rank: 3.80</td>
+			<td>rank: 1.30</td>
+         </tr>
+		          <tr>
+            <th>HLA-B15</th>
+			<td>rank: 5.80</td>
+            <td>rank: 2.80</td>
+            <td>rank: 8.20</td>
+			<td>rank: 4.55</td>
+			<td>rank: 0.10</td>
+         </tr>
+      </table><br>
+</div>
+<button class="collapsible"><b>IEDB SMMPMBEC</b></button>
+<div class="content">
+
+      <br><table border = "1" width="80%">
+         <tr>
+            <th></th>
+			<th>pooled (8-11-mers)</th>
+            <th>8-mers</th>
+            <th>9-mers</th>
+			<th>10-mers</th>
+			<th>11-mers</th>
+         </tr>
+         <tr>
+            <th>HLA-A1</th>
+			<td>1042nM</td>
+            <td>3764nM</td>
+            <td>3601nM</td>
+			<td>1042nM</td>
+			<td>526nM</td>
+         </tr>
+         <tr>
+            <th>HLA-A2</th>
+			<td>1715nM</td>
+            <td>927nM</td>
+            <td>3073nM</td>
+			<td>1294nM</td>
+			<td>284nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A3</th>
+			<td>1881nM</td>
+            <td>21976nM</td>
+            <td>1881nM</td>
+			<td>971nM</td>
+			<td>692nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A11</th>
+			<td>1966nM</td>
+            <td>3425nM</td>
+            <td>1254nM</td>
+			<td>2716nM</td>
+			<td>510nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A24</th>
+			<td>1854nM</td>
+            <td>1123nM</td>
+            <td>2183nM</td>
+			<td>3620nM</td>
+			<td>9957nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-B7</th>
+			<td>1085nM</td>
+            <td>3197nM</td>
+            <td>1085nM</td>
+			<td>667nM</td>
+			<td>4567nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-B15</th>
+			<td>478nM</td>
+            <td>N/A</td>
+            <td>2911nM</td>
+			<td>354nM</td>
+			<td>N/A</td>
+         </tr>
+      </table><br>
+</div>
+<button class="collapsible"><b>IEDB SMM</b></button>
+<div class="content">
+
+      <br><table border = "1" width="80%">
+         <tr>
+            <th></th>
+			<th>pooled (8-11-mers)</th>
+            <th>8-mers</th>
+            <th>9-mers</th>
+			<th>10-mers</th>
+			<th>11-mers</th>
+         </tr>
+         <tr>
+            <th>HLA-A1</th>
+			<td>315nM</td>
+            <td>16632nM</td>
+            <td>300nM</td>
+			<td>1754nM</td>
+			<td>2839nM</td>
+         </tr>
+         <tr>
+            <th>HLA-A2</th>
+			<td>1277nM</td>
+            <td>167nM</td>
+            <td>3077nM</td>
+			<td>1643nM</td>
+			<td>91nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A3</th>
+			<td>2930nM</td>
+            <td>13611nM</td>
+            <td>1909nM</td>
+			<td>907nM</td>
+			<td>3706nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A11</th>
+			<td>1539nM</td>
+            <td>3250nM</td>
+            <td>3634nM</td>
+			<td>2924nM</td>
+			<td>229nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-A24</th>
+			<td>3035nM</td>
+            <td>60nM</td>
+            <td>1725nM</td>
+			<td>3356nM</td>
+			<td>8672nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-B7</th>
+			<td>334nM</td>
+            <td>334nM</td>
+            <td>923nM</td>
+			<td>1327nM</td>
+			<td>88nM</td>
+         </tr>
+		          <tr>
+            <th>HLA-B15</th>
+			<td>184nM</td>
+            <td>N/A</td>
+            <td>1615nM</td>
+			<td>183nM</td>
+			<td>N/A</td>
+         </tr>
+      </table><br>
+</div>
+<script>
+var coll = document.getElementsByClassName("collapsible");
+var i;
+
+for (i = 0; i < coll.length; i++) {
+    coll[i].addEventListener("click", function() {
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        if (content.style.display === "block") {
+            content.style.display = "none";
+        } else {
+            content.style.display = "block";
+        }
+    });
+}
+</script>
+
+
+<br><br><br></div>
+</body>
+<footer>
+MHCcombine 1.0 was developed and is hosted at the Department for Immunotherapy and Immunoprevention at the German Cancer Research Center (DKFZ) in Heidelberg, Germany.<br>We would appreciate notes and comments to improve MHCcombine. <br>Please contact us at:<br><a href="mailto:mhccombine@dkfz-heidelberg.de">mhccombine@dkfz-heidelberg.de<br><br><br><img src="Logo-klein.png"></a>
+<br><br><br><a href="http://www.dkfz.de"><img src="DKFZ_Logo-klein.png"></a>
+<br><br><br><br></footer>

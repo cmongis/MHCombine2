@@ -1,0 +1,126 @@
+<html>
+<head>
+<title>MHCcombine Web-Application 1.0</title>
+
+  <!-- Loading Bootstrap -->
+    <link href="css/vendor/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Loading Flat UI -->
+    <link href="css/flat-ui.min.css" rel="stylesheet">
+
+    <link rel="shortcut icon" href="img/MHCcombine-icon2.ico">
+	
+	<!-- jQuery (necessary for Flat UI's JavaScript plugins) -->
+    <script src="js/vendor/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/vendor/video.js"></script>
+    <script src="js/flat-ui.min.js"></script>
+	
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements. All other JS at the end of file. -->
+    <!--[if lt IE 9]>
+      <script src="js/vendor/html5shiv.js"></script>
+      <script src="js/vendor/respond.min.js"></script>
+    <![endif]-->
+
+
+</head>
+
+<body>
+
+<!-- MB: Navigationszeile oben -->    
+<nav class="navbar navbar-default" role="navigation">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <a class="navbar-brand" href="#"><img src="Logo-klein.png" width="100%" height="100%" alt="MHCcombineLogo"></a>
+      <ul class="nav navbar-nav">
+        <li><a href="index.html">MHCcombine<span class="sr-only">(current)</span></a></li>
+        <li><a href="cite.html">How to cite</a></li>
+        <li><a href="help.html">How to use</a></li>
+		<li><a href="interpretation.html">How to interpret</a></li>
+		<li><a href="recommendations.html">Recommendations</a></li>
+		<li><a href="links.html">Links</a></li>
+		<li><a class="navbar-brand" href="https://www.dkfz.de/"><img src="DKFZ_Logo.png" width="100%" height="100%" alt="DKFZLogo"></a></li>
+      </ul>
+      
+    </div><!-- /.navbar-c*ollapse --><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+<div class="container">
+<h4>How to use</h4>
+<br>
+<h6>How to run the webtool</h6>
+<br>
+To run MHCcombine you need an HTML5 compatible browser, this means Internet Explorer 9, Firefox 4, Chrome 18 or higher versions.
+<br><br>
+<h6>How to use MHCcombine</h6>
+<br>
+<b>1) Enter the sequence of your protein of interest in FASTA format: </b><br>
+Get the amino acid sequence of your protein of interest in FASTA format. E.g. copy it from <a href="http://www.uniprot.org/uniprot/" target="_blank">UniProtKB database</a>. Avoid copying of line breaks.<br><br>
+<a href="http://www.uniprot.org/uniprot/P03126.fasta" target="_blank"> FASTA example:</a><br>
+>sp|P03126|VE6_HPV16 Protein E6 OS=Human papillomavirus type 16 OX=333760 GN=E6 PE=1 SV=1
+MHQKRTAMFQDPQERPRKLPQLCTELQTTIHDIILECVYCKQQLLRREVYDFAFRDLCIV
+YRDGNPYAVCDKCLKFYSKISEYRHYCYSLYGTTLEQQYNKPLCDLLIRCINCQKPLCPE
+EKQRHLDKKQRFHNIRGRWTGRCMSCCRSSRTRRETQL<br>
+<br>
+<b>2) Select the MHC species/loci of interest:</b><br>
+Choose between a list of representatives of HLA supertypes and lists of HLA-A, HLA-B or HLA-C alleles.<br>
+<br>
+<b>3) Select the MHC type of interest:</b><br>
+Choose the desired HLA-type from the list selected in step 2). Only one HLA-type can be requested per query.<br>
+<br>
+<b>4) Select the prediction methods:</b><br>
+Choose all algorithms you want to apply by ticking the respective checkboxes. <br>
+<br>
+<b>5) Select the peptide length:</b><br>
+Choose the desired sequence length of the predicted peptides. You can either request each length separately or select 8-11 to predict 8-,9-,10- and 11-mers at the same time.
+Please note that not all methods are capable of predicting all peptide lengths.<br>
+<br>
+<b>6) Enter an ID for your protein sequence of interest:</b><br>
+For your convenience, you can enter up to 10 characters to identify the query. This could be e.g. the name of your protein. The ID will be used to create the output file name.<br>
+<br>
+<b>7) Submit your request</b><br>
+Clicking the submit button will start the queries. Once it has finished you will be asked to save a comma seperated value (.csv) file that is named according to your selected ID, peptide length and HLA-type. Select "Save file" and a location on your disk to save the output.<br>
+<br><br>
+<h6>How to convert the output .csv-file</h6>
+<br>
+The .csv-file can be opened with every spreadsheet platform. Here we describe the use of Microsoft Excel.
+<br>
+Manually import the .csv-file to assure correct formatting. <br>
+<b>1)</b> Open a new blank Excel file and click:
+<br>Data->Get External Data->from Text...<br>
+<br><img src="Howtouse_1.jpg" style="width:100%"><br><br>
+<br><b>2)</b> Select the .csv-file and use the Text Import Wizard.<br>
+<br><b>3)</b> Select the original data type "Delimited" and continue to the next page.<br>
+<br><img src="Howtouse_2.jpg" style="width:50%;display:block; margin-left: auto; margin-right: auto"><br>
+<br><b>4)</b> Select the delimiter "Semicolon" and continue to the next page.<br>
+<br><img src="Howtouse_3.jpg" style="width:50%;display:block; margin-left: auto; margin-right: auto"><br>
+<br><b>5)</b> In data preview select the columns  "Region" and "Sequence" and change the column data format to Text. <br>
+<br><img src="Howtouse_4.jpg" style="width:50%;display:block; margin-left: auto; margin-right: auto"><br>
+<br><b>6)</b> Click on the button "Advanced..." and enter a dot "." as decimal separator to adequately convert the server output into your system settings.<br>
+<br><img src="Howtouse_5.jpg" style="width:50%;display:block; margin-left: auto; margin-right: auto"><br>
+<br><b>7)</b> Select the A1 field and click:<br>
+<br>Insert->Table...<br>
+<br><img src="Howtouse_7.jpg" style="width:100%"><br><br>
+<br>Select the whole range of output data to convert all rows and columns into a sortable table. Now it should look like this:<br>
+<br><img src="Howtouse_6.jpg" style="width:100%"><br>
+<br><br><br><br>
+
+
+
+
+
+
+
+</div>
+
+</body>
+<footer>
+MHCcombine 1.0 was developed and is hosted at the Department for Immunotherapy and Immunoprevention at the German Cancer Research Center (DKFZ) in Heidelberg, Germany.<br>We would appreciate notes and comments to improve MHCcombine. <br>Please contact us at:<br><a href="mailto:mhccombine@dkfz-heidelberg.de">mhccombine@dkfz-heidelberg.de<br><br><br><img src="Logo-klein.png"></a>
+<br><br><br><a href="http://www.dkfz.de"><img src="DKFZ_Logo-klein.png"></a>
+<br><br><br><br></footer>
+
+</html>
