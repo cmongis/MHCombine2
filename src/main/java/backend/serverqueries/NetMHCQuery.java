@@ -29,9 +29,12 @@ import org.apache.http.util.EntityUtils;
 
 import utils.Constants.Algorithm;
 import backend.entries.TemporaryEntry;
+import com.sun.org.apache.xerces.internal.impl.xpath.regex.RegularExpression;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 
@@ -74,7 +77,12 @@ public class NetMHCQuery extends AbstractNetMhcQuery {
     protected final String predictionResultTableBorder = "------------------";
     protected final String boundary = "---------------------------183079827324139952612037066";
     protected Algorithm algorithm = Algorithm.NetMHC40;
-
+    //space? number+ word+ word+ word+ number+
+    //protected final Pattern LINE_RE = Pattern.compile("^\\d+\\s+[\\w\\\\-]+\\s+[\\w\\\\-]+\\s+[\\w\\\\-]+\\s+\\d+");
+    
+    protected final Pattern LINE_RE = Pattern.compile("^\\d+\\s+[\\w\\d\\-\\*\\:]+\\s+");
+    
+    
     public NetMHCQuery(String sequence, String allel, Integer length) {
         super(sequence, allel, length);
         netMhcAllel = processAllel(allel);
@@ -175,7 +183,38 @@ public class NetMHCQuery extends AbstractNetMhcQuery {
         boolean resultsAvailable = false;
         HttpEntity responseEntity = response.getEntity();
         BufferedReader reader = new BufferedReader(new InputStreamReader(responseEntity.getContent()));
+    
+        String line = reader.readLine();
+        
+        Pattern predictionPattern = getPredictionRecognitionPattern();
+               
+        boolean wasWaitingPage = true;
+        
+        
+        while(line != null) {
+            line = line.trim();
+            
+            if(line.contains("prediction results")) {
+                wasWaitingPage = false;
+            }
+            
+            if(!wasWaitingPage) {
+                Matcher matcher = predictionPattern.matcher(line);
 
+                if(matcher.find()) {
+                    processLine(line, algorithm);
+                }
+            }
+            line = reader.readLine();
+        }
+    
+        
+        EntityUtils.consume(responseEntity);
+        return wasWaitingPage;
+    }
+    
+     
+    /*
         String line = null;
         do {
             line = reader.readLine();
@@ -236,6 +275,12 @@ public class NetMHCQuery extends AbstractNetMhcQuery {
 
         return !resultsAvailable;
     }
+    */
+    
+    protected Pattern getPredictionRecognitionPattern() {
+        return LINE_RE;
+    }
+    
 
     @Override
     protected void processLine(String line, Algorithm anAlgorithm) {

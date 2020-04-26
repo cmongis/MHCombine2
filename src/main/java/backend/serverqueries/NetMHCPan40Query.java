@@ -54,11 +54,11 @@ public class NetMHCPan40Query extends NetMHCPan30Query {
         if (aSplitLine.length < 13) {
             logger.warn("not enough input! " + aLineToWork);
             return;
-        } else if (aSplitLine.length > 15) {
+        } /*else if (aSplitLine.length > 15) {
             // Strong and weak binders have last entry "<= WB", which gives two fields in the array!
             logger.warn("too much input! " + aLineToWork);
             return;
-        }
+        }*/
 
         // allel is returned "HLA-A*01:01" here, even though as input one had to provide "HLA-A01:01".
         allel = this.allel; //aSplitLine[1];
