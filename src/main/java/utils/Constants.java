@@ -28,6 +28,7 @@ public class Constants {
 		NetMHCpan30("NetMHCpan 3.0"),
                 NetMHCpan28("NetMHCpan 2.8"),
                 NetMHCpan40("NetMHCpan 4.0"),
+                NetMHCpan41("NetMHCpan 4.1"),
                 NetMHC34("NetMHC 3.4"),
 		IEDB_netMHCcons("NetMHCcons 1.1"),
 		//IEDB_ann("NetMHC 3.4 = IEDB ann"),

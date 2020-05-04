@@ -34,6 +34,7 @@ import backend.serverqueries.NetMHCpan28Query;
 import backend.serverqueries.NetMHC34Query;
 import backend.serverqueries.NetMHCPan30Query;
 import backend.serverqueries.NetMHCPan40Query;
+import backend.serverqueries.NetMHCPan41Query;
 import backend.serverqueries.NetMHCQuery;
 import backend.serverqueries.SyfpeithiQuery;
 
@@ -53,6 +54,8 @@ public class QueryFactory {
                 return new NetMHC34Query(sequence, allel, length);
             case "NetMHCpan40":
                 return new NetMHCPan40Query(sequence, allel, length);
+            case "NetMHCpan41":
+                return new NetMHCPan41Query(sequence, allel, length);
             case "NetMHCpan30":
                 return new NetMHCPan30Query(sequence, allel, length);
 
