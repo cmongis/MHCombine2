@@ -40,9 +40,10 @@ public class IedbSmmpmbecQuery extends AbstractIedbQuery {
 	private final Logger logger = LogManager.getLogger(IedbSmmpmbecQuery.class);
 	
 	public IedbSmmpmbecQuery(String sequence, String allel, Integer length) {
-		super(sequence, allel, length);
+		super(Algorithm.IEDB_smmpmbec,"smmpmbec",sequence, allel, length);
 	}
-		
+        
+        /*
 	public Set<TemporaryEntry> queryServer() {
 
 		CloseableHttpClient client = HttpClients.createSystem();
@@ -90,7 +91,7 @@ public class IedbSmmpmbecQuery extends AbstractIedbQuery {
 		
 		return results;
 
-	}
+	}*/
 		
 	
 }

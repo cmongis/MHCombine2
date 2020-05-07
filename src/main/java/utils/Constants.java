@@ -32,15 +32,21 @@ public class Constants {
                 NetMHC34("NetMHC 3.4"),
 		IEDB_netMHCcons("NetMHCcons 1.1"),
 		//IEDB_ann("NetMHC 3.4 = IEDB ann"),
-		//IEDB_netMHCpan("NetMHCpan 2.8"),
+                
+           
 		IEDB_pickpocket("Pickpocket 1.1"),
 		IEDB_recommended("IEDB Recommended"),
 		IEDB_consensus("IEDB Consensus"),
 		IEDB_smmpmbec(" IEDB SMMPMBEC"),
 		IEDB_smm("IEDB SMM"),
-		SYFPEITHI("SYFPEITHI");
+		SYFPEITHI("SYFPEITHI"),
 //		BIMAS("BIMAS");
 		
+                @Deprecated
+                IEDB_ann("IEDB Annotated"),
+                @Deprecated
+		IEDB_netMHCpan("NetMHCpan 2.8");
+                
 		private final String printName;
 		
 		private Algorithm(String printName) {

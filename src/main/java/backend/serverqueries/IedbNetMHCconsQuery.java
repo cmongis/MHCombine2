@@ -40,9 +40,10 @@ public class IedbNetMHCconsQuery extends AbstractIedbQuery {
 	private final Logger logger = LogManager.getLogger(IedbNetMHCconsQuery.class);
 
 	public IedbNetMHCconsQuery(String sequence, String allel, Integer length) {
-		super(sequence, allel, length);
+		super(Algorithm.IEDB_netMHCcons,"netmhccons",sequence, allel, length);
 	}
 	
+        /*
 	@Override
 	protected Set<TemporaryEntry> queryServer() {
 		CloseableHttpClient client = HttpClients.createSystem();
@@ -89,6 +90,6 @@ public class IedbNetMHCconsQuery extends AbstractIedbQuery {
 		}
 		
 		return results;
-	}
+	}*/
 	
 }

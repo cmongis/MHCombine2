@@ -38,70 +38,17 @@ import java.util.logging.Logger;
 public class IedbConsensusQuery extends AbstractIedbQuery {
 	
 	//private final Logger logger = LogManager.getLogger(IedbConsensusQuery.class);
-	private final Logger logger = Logger.getLogger(this.getClass().getSimpleName());
 	
 	public IedbConsensusQuery(String sequence, String allel, Integer length) {
-		super(sequence, allel, length);
+		super(Algorithm.IEDB_consensus,"consensus",sequence, allel, length);
 	}
 	
-		
-	public Set<TemporaryEntry> queryServer() {
-
-		CloseableHttpClient client = HttpClients.createSystem();
-		
-		HttpPost postRequest = new HttpPost(url);
-		HttpEntity entity = getFormData("consensus");
-               
-		postRequest.setEntity(entity);
-		
-		CloseableHttpResponse response = null;
-		try {
-			response = client.execute(postRequest);
-			System.out.println("Going for it");
-			// consume input and create result.
-			BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-			String line = null;
-			boolean processing = false;
-			do {
-				line = reader.readLine();
-                                System.out.println(line);
-				if (line == null) {
-					break;
-				}
-				if (processing) {
-					processLine(line, Algorithm.IEDB_consensus);
-				} else {
-					if (line.startsWith("allele")) {
-						// next line will be first dataset.
-						processing = true;
-					}
-				}
-			} while (true);
-			
-			
-			EntityUtils.consume(response.getEntity());
-		} catch (IOException e) {
-			logger.log(Level.SEVERE,"Exception happened while executing POST request. Abort.", e);
-		} finally {
-			if (response != null) {
-				try {
-					response.close();
-				} catch (IOException e) {
-					logger.log(Level.SEVERE,"Exception happened while closing response. Abort.", e);
-				}
-			}
-		}
-		
-		return results;
-
-	}
-		
-	
+       
 	@Override
 	protected void processLine(String line, Algorithm algorithm) {
 		String[] entries = line.split("\t");
 		if (entries.length < 8) {
-			logger.log(Level.WARNING,"Output line "+line+" contains less than the mandatory 8 entries (allele, seq_num, start, end, length, peptide, consensus_percentile_rank, ann_ic50, ann_rank, [other]), did maybe something change??");
+			logger().log(Level.WARNING,"Output line "+line+" contains less than the mandatory 8 entries (allele, seq_num, start, end, length, peptide, consensus_percentile_rank, ann_ic50, ann_rank, [other]), did maybe something change??");
 			return;
 		}
 		// Line:

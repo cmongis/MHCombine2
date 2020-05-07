@@ -29,7 +29,7 @@ import org.apache.http.util.EntityUtils;
 
 import utils.Constants.Algorithm;
 import backend.entries.TemporaryEntry;
-import com.sun.org.apache.xerces.internal.impl.xpath.regex.RegularExpression;
+import backend.serverqueries.exceptions.LineProcessingException;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -202,7 +202,12 @@ public class NetMHCQuery extends AbstractNetMhcQuery {
                 Matcher matcher = predictionPattern.matcher(line);
 
                 if(matcher.find()) {
+                    try {
                     processLine(line, algorithm);
+                    }
+                    catch(Exception e) {
+                        throw new LineProcessingException(algorithm, line, e);
+                    }
                 }
             }
             line = reader.readLine();

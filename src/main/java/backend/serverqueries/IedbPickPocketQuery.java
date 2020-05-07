@@ -40,9 +40,10 @@ public class IedbPickPocketQuery extends AbstractIedbQuery {
 	private final Logger logger = LogManager.getLogger(IedbPickPocketQuery.class);
 
 	public IedbPickPocketQuery(String sequence, String allel, Integer length) {
-		super(sequence, allel, length);
+		super(Algorithm.IEDB_pickpocket,"pickpocket",sequence, allel, length);
 	}
 	
+        /*
 	@Override
 	protected Set<TemporaryEntry> queryServer() {
 		CloseableHttpClient client = HttpClients.createSystem();
@@ -89,6 +90,6 @@ public class IedbPickPocketQuery extends AbstractIedbQuery {
 		}
 		
 		return results;
-	}
+	}*/
 	
 }

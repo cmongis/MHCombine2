@@ -182,10 +182,11 @@ public class NetMHCPan30Query extends NetMHCQuery {
         String sequence = null;
         Integer position = null;
         Double score = null;
-        System.out.println(line);
+       
         String aLineToWork = line.trim().replaceAll("\\s+", " ");
         String[] aSplitLine = aLineToWork.split(" ");
         if (aSplitLine.length < 14) {
+            
             logger.warn("not enough input! " + aLineToWork);
             return;
         } else if (aSplitLine.length > 16) {

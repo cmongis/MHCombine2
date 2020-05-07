@@ -40,10 +40,10 @@ public class IedbSmmQuery extends AbstractIedbQuery {
 	private final Logger logger = LogManager.getLogger(IedbSmmQuery.class);
 	
 	public IedbSmmQuery(String sequence, String allel, Integer length) {
-		super(sequence, allel, length);
+		super(Algorithm.IEDB_smm,"smm",sequence, allel, length);
 	}
 
-
+        /*
 	public Set<TemporaryEntry> queryServer() {
 
 		CloseableHttpClient client = HttpClients.createSystem();
@@ -91,7 +91,7 @@ public class IedbSmmQuery extends AbstractIedbQuery {
 		
 		return results;
 
-	}
+	}*/
 		
 	
 }

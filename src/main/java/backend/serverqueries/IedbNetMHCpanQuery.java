@@ -35,14 +35,16 @@ import org.apache.logging.log4j.Logger;
 import utils.Constants.Algorithm;
 import backend.entries.TemporaryEntry;
 
+@Deprecated
 public class IedbNetMHCpanQuery extends AbstractIedbQuery {
 	
 	private final Logger logger = LogManager.getLogger(IedbNetMHCpanQuery.class);
 	
 	public IedbNetMHCpanQuery(String sequence, String allel, Integer length) {
-		super(sequence, allel, length);
+		super(Algorithm.IEDB_netMHCpan,"netmhcpan",sequence, allel, length);
 	}
 	
+        /*
 	public Set<TemporaryEntry> queryServer() {
 
 		CloseableHttpClient client = HttpClients.createSystem();
@@ -90,7 +92,7 @@ public class IedbNetMHCpanQuery extends AbstractIedbQuery {
 		
 		return results;
 
-	}
+	}*/
 		
 	
 }

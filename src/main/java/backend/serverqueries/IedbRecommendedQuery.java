@@ -43,9 +43,11 @@ public class IedbRecommendedQuery extends AbstractIedbQuery {
        
 	public IedbRecommendedQuery(String sequence, String allel,
 			Integer length) {
-		super(sequence, allel, length);
+		super(Algorithm.IEDB_recommended,"recommended",sequence, allel, length);
 	}
 
+        
+        /*
 	public Set<TemporaryEntry> queryServer() {
 		CloseableHttpClient client = HttpClients.createSystem();
 
@@ -93,7 +95,7 @@ public class IedbRecommendedQuery extends AbstractIedbQuery {
 
 		return results;
 
-	}
+	}*/
 
 	@Override
 	protected void processLine(String line, Algorithm algorithm) {
@@ -104,7 +106,7 @@ public class IedbRecommendedQuery extends AbstractIedbQuery {
 		}
 		// Line:
 		// allele, seq_num, start, end, length, peptide, method, percentile_rank, ann_ic50, ann_rank, smm_ic50, smm_rank, comblib_sidney2008_score, comblib_sidney2008_rank, netmhcpan_ic50, netmhcpan_rank
-		TemporaryEntry entry = new TemporaryEntry(entries[0], entries[5], Integer.parseInt(entries[2]), algorithm, Double.parseDouble(entries[7]));
+		TemporaryEntry entry = new TemporaryEntry(entries[0], entries[5], Integer.parseInt(entries[2]), algorithm, Double.parseDouble(entries[8]));
 		results.add(entry);
 	}
 }

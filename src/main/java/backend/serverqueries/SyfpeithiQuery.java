@@ -114,7 +114,6 @@ public class SyfpeithiQuery extends AbstractQuery {
             boolean processing = false;
             boolean oneLineBeforeProcessing = false;
             do {
-                System.out.println(line);
                 line = reader.readLine();
                 if (line == null) {
                     break;

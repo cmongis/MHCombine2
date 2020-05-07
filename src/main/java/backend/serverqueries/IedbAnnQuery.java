@@ -35,15 +35,18 @@ import org.apache.logging.log4j.Logger;
 import utils.Constants.Algorithm;
 import backend.entries.TemporaryEntry;
 
+@Deprecated
 public class IedbAnnQuery extends AbstractIedbQuery {
 	
 	private final Logger logger = LogManager.getLogger(IedbAnnQuery.class);
 	
 	
 	public IedbAnnQuery(String sequence, String allel, Integer length) {
-		super(sequence, allel, length);
+		super(Algorithm.IEDB_ann,"ann",sequence, allel, length);
 	}
-			
+	
+        
+        /*
 	public Set<TemporaryEntry> queryServer() {
 
 		CloseableHttpClient client = HttpClients.createSystem();
@@ -91,7 +94,11 @@ public class IedbAnnQuery extends AbstractIedbQuery {
 		
 		return results;
 
-	}
+	}*/
+        
+        public void processLine(String line, Algorithm algorithm) {
+            
+        }
 		
 	
 }
