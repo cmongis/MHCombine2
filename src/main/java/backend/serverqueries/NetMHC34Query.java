@@ -27,6 +27,7 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import backend.entries.Algorithm;
 import utils.Constants;
 
 /**
@@ -46,7 +47,7 @@ public class NetMHC34Query extends NetMHCQuery{
         setConfigFile(configFileValue);
         this.lengthName  = "peplen";
         this.masterValue = "2";
-        this.algorithm = Constants.Algorithm.NetMHC34;
+        this.algorithm = Algorithm.NetMHC34;
         
     }
     
@@ -109,7 +110,7 @@ public class NetMHC34Query extends NetMHCQuery{
     
     
     @Override
-     protected void processLine(String line, Constants.Algorithm anAlgorithm) {
+     protected void processLine(String line, Algorithm anAlgorithm) {
          logger.info(line);
          //    0  HLA-A*02:01     MHQKRTAM sp_P03126_VE6_H         0.036     33984.93    50.00
          String allel = this.allel;

@@ -21,7 +21,7 @@ package backend.serverqueries;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import utils.Constants.Algorithm;
+import backend.entries.Algorithm;
 import backend.entries.TemporaryEntry;
 import java.util.logging.Logger;
 

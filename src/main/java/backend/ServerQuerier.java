@@ -47,7 +47,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import utils.Constants.Algorithm;
+import backend.entries.Algorithm;
 import utils.Util;
 import backend.entries.EntryKey;
 import backend.entries.ResultEntry;

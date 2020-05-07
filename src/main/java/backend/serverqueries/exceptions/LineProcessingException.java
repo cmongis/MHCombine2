@@ -5,6 +5,7 @@
  */
 package backend.serverqueries.exceptions;
 
+import backend.entries.Algorithm;
 import utils.Constants;
 
 /**
@@ -12,7 +13,7 @@ import utils.Constants;
  * @author cyrilmongis
  */
 public class LineProcessingException extends RuntimeException{
-    public LineProcessingException(Constants.Algorithm algorithm, String line, Throwable e) {
+    public LineProcessingException(Algorithm algorithm, String line, Throwable e) {
         super(String.format("Error when processing line ( %s )\n%s\n",algorithm.toString(),line), e);
     }
 }

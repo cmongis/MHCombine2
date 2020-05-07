@@ -20,6 +20,7 @@ package backend.serverqueries;
 
 import backend.entries.TemporaryEntry;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import backend.entries.Algorithm;
 import utils.Constants;
 
 /**
@@ -31,7 +32,7 @@ public class NetMHCPan40Query extends NetMHCPan30Query {
     public NetMHCPan40Query(String sequence, String allel, Integer length) {
         super(sequence, allel, length);
         setConfigFile("/usr/opt/www/pub/CBS/services/NetMHCpan-4.0/NetMHCpan.cf");
-         this.algorithm = Constants.Algorithm.NetMHCpan40;
+         this.algorithm = Algorithm.NetMHCpan40;
     }
     
      public String processAllel(String allel) {
@@ -39,7 +40,7 @@ public class NetMHCPan40Query extends NetMHCPan30Query {
     }
      
     @Override
-    protected void processLine(String line, Constants.Algorithm anAlgorithm) {
+    protected void processLine(String line, Algorithm anAlgorithm) {
         // Line contains (space separated)
         // "  Pos          HLA         Peptide       Core Of Gp Gl Ip Il        Icore        Identity   Score Aff(nM)   %Rank  BindLevel"
         //     1  HLA-A*01:01        SYFPEITH  -SYFPEITH  0  0  0  0  1     SYFPEITH        Sequence 0.02170 39535.2   60.00

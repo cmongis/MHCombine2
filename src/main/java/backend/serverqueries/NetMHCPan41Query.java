@@ -5,6 +5,7 @@
  */
 package backend.serverqueries;
 
+import backend.entries.Algorithm;
 import utils.Constants;
 
 public class NetMHCPan41Query extends NetMHCPan40Query {
@@ -12,7 +13,7 @@ public class NetMHCPan41Query extends NetMHCPan40Query {
     public NetMHCPan41Query(String sequence, String allel, Integer length) {
         super(sequence, allel, length);
         setConfigFile("/usr/opt/www/pub/CBS/services/NetMHCpan-4.1/NetMHCpan.cf");
-         this.algorithm = Constants.Algorithm.NetMHCpan41;
+         this.algorithm = Algorithm.NetMHCpan41;
     }
     
 }

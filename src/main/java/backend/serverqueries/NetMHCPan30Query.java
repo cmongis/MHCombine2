@@ -23,7 +23,7 @@ package backend.serverqueries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import utils.Constants.Algorithm;
+import backend.entries.Algorithm;
 import backend.entries.TemporaryEntry;
 
 public class NetMHCPan30Query extends NetMHCQuery {

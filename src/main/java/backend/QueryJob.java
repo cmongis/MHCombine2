@@ -56,6 +56,7 @@ import backend.entries.ResultEntry;
 import backend.entries.TemporaryEntry;
 import backend.serverqueries.AbstractQuery;
 import java.util.concurrent.TimeUnit;
+import backend.entries.Algorithm;
 
 /**
  * Servlet implementation class ServerQuerier
@@ -214,7 +215,7 @@ public class QueryJob implements Job {
 	    writer.append(delimiter);
 	    writer.append("Sequence");
 	    writer.append(delimiter);
-	    for (Constants.Algorithm algo : Constants.Algorithm.values()) {
+	    for (Algorithm algo : Algorithm.values()) {
 	    	writer.append(algo.toString());
 	    	writer.append(delimiter);
 	    }
@@ -231,7 +232,7 @@ public class QueryJob implements Job {
 	    	writer.append(delimiter);
 
 	    	ResultEntry aResult = results.get(anEntry);
-	        for (Constants.Algorithm algo : Constants.Algorithm.values()) {
+	        for (Algorithm algo : Algorithm.values()) {
 	        	Double score = aResult.getScore(algo);
 	        	String field = "N/A";
 	        	if (score != null) {

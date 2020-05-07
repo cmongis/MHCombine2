@@ -40,7 +40,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import utils.AlleleHelper;
-import utils.Constants.Algorithm;
+import backend.entries.Algorithm;
 import backend.entries.TemporaryEntry;
 @Deprecated
 public class BimasQuery extends AbstractQuery {

@@ -29,7 +29,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.message.BasicNameValuePair;
 
-import utils.Constants.Algorithm;
+import backend.entries.Algorithm;
 import backend.entries.TemporaryEntry;
 import backend.serverqueries.exceptions.LineProcessingException;
 import java.io.BufferedReader;

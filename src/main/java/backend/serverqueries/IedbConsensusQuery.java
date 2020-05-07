@@ -30,7 +30,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-import utils.Constants.Algorithm;
+import backend.entries.Algorithm;
 import backend.entries.TemporaryEntry;
 import java.util.logging.Level;
 import java.util.logging.Logger;

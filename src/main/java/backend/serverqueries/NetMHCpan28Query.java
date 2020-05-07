@@ -22,6 +22,7 @@ import backend.entries.TemporaryEntry;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import backend.entries.Algorithm;
 import utils.Constants;
 
 /**
@@ -41,7 +42,7 @@ public class NetMHCpan28Query extends NetMHCQuery {
         super(sequence, allel, length);
         logger.info("Creating request");
         setConfigFile(configFileValue);
-        this.algorithm = Constants.Algorithm.NetMHCpan28;
+        this.algorithm = Algorithm.NetMHCpan28;
     }
     
     @Override
@@ -50,7 +51,7 @@ public class NetMHCpan28Query extends NetMHCQuery {
     }
     
     @Override
-     protected void processLine(String line, Constants.Algorithm anAlgorithm) {
+     protected void processLine(String line, Algorithm anAlgorithm) {
          logger.info(line);
          //    0  HLA-A*02:01     MHQKRTAM sp_P03126_VE6_H         0.036     33984.93    50.00
          //String allel = null;

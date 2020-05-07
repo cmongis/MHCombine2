@@ -27,7 +27,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.util.EntityUtils;
 
-import utils.Constants.Algorithm;
+import backend.entries.Algorithm;
 import backend.entries.TemporaryEntry;
 import backend.serverqueries.exceptions.LineProcessingException;
 import java.io.File;
