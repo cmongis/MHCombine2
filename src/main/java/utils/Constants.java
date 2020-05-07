@@ -24,6 +24,8 @@ public class Constants {
 	public static String CRLF = "\r\n";
 	
 	public static enum Algorithm {
+            
+            
 		NetMHC40("NetMHC 4.0"),
 		NetMHCpan30("NetMHCpan 3.0"),
                 NetMHCpan28("NetMHCpan 2.8"),
@@ -39,13 +41,15 @@ public class Constants {
 		IEDB_consensus("IEDB Consensus"),
 		IEDB_smmpmbec(" IEDB SMMPMBEC"),
 		IEDB_smm("IEDB SMM"),
-		SYFPEITHI("SYFPEITHI"),
-//		BIMAS("BIMAS");
-		
-                @Deprecated
-                IEDB_ann("IEDB Annotated"),
-                @Deprecated
-		IEDB_netMHCpan("NetMHCpan 2.8");
+		SYFPEITHI("SYFPEITHI");
+                
+                
+                
+		//BIMAS("BIMAS");
+                //@Deprecated
+                //IEDB_ann("IEDB Annotated"),
+                //@Deprecated
+		//IEDB_netMHCpan("NetMHCpan 2.8");
                 
 		private final String printName;
 		

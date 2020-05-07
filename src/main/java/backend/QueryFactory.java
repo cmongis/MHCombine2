@@ -22,10 +22,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import backend.serverqueries.AbstractQuery;
-import backend.serverqueries.IedbAnnQuery;
 import backend.serverqueries.IedbConsensusQuery;
 import backend.serverqueries.IedbNetMHCconsQuery;
-import backend.serverqueries.IedbNetMHCpanQuery;
 import backend.serverqueries.IedbPickPocketQuery;
 import backend.serverqueries.IedbRecommendedQuery;
 import backend.serverqueries.IedbSmmQuery;
@@ -66,10 +64,6 @@ public class QueryFactory {
                 return new IedbNetMHCconsQuery(sequence, allel, length);
             case "IEDBPickPocket":
                 return new IedbPickPocketQuery(sequence, allel, length);
-            case "IedbNetMHCpan":
-                return new IedbNetMHCpanQuery(sequence, allel, length);
-            case "IedbAnn":
-                return new IedbAnnQuery(sequence, allel, length);
             case "IedbRecommended":
                 return new IedbRecommendedQuery(sequence, allel, length);
             case "IedbConsensus":
