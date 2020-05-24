@@ -22,7 +22,7 @@ public enum Algorithm {
     IedbConsensus("IEDB Consensus", ResultColumnSuffix.RANK),
     IedbSmmpmbec(" IEDB SMMPMBEC"),
     IedbSmm("IEDB SMM"),
-    SYFPEITHI("SYFPEITHI");
+    SYFPEITHI("SYFPEITHI",ResultColumnSuffix.SCORE);
 
     //BIMAS("BIMAS");
     //@Deprecated

@@ -14,4 +14,5 @@ public class ResultColumnSuffix {
     public static final String RANK = "(%Rank)";
     public static final String RANK_BA = "(%Rank BA)";
     public static final String NM = "(nM)";
+    public static final String SCORE = "(score)";
 }

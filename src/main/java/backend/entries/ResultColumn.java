@@ -15,12 +15,8 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * @author cyrilmongis
  */
 public class ResultColumn {
-    
-    
-    
-    
-    
-    
+
+
     final Algorithm algorithm;
     
     final String suffix;
