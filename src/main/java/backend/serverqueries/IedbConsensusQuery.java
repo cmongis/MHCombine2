@@ -36,13 +36,17 @@ public class IedbConsensusQuery extends AbstractIedbQuery {
 	@Override
 	protected List<TemporaryEntry> processLine(String line) {
 		String[] entries = line.split("\t");
-		if (entries.length < 8) {
-			logger().log(Level.WARNING,"Output line "+line+" contains less than the mandatory 8 entries (allele, seq_num, start, end, length, peptide, consensus_percentile_rank, ann_ic50, ann_rank, [other]), did maybe something change??");
-			return Arrays.asList();
-		}
+	
 		// Line:
 		// allele, seq_num, start, end, length, peptide, consensus_percentile_rank, ann_ic50, ann_rank, smm_ic50, smm_rank, comblib_sidney2008_score, comblib_sidney2008_rank
-		TemporaryEntry entry = new TemporaryEntry(entries[0], entries[5], Integer.parseInt(entries[2]), getAlgorithm().toColumn(), Double.parseDouble(entries[6]));
+		
+                Double rank = Double.parseDouble(entries[6]);
+                
+                TemporaryEntry entry = new TemporaryEntry(entries[0],
+                        entries[5],
+                        Integer.parseInt(entries[2]),
+                        getAlgorithm().toColumn(),
+                        rank);
 		return Arrays.asList(entry);
 	}
 	
