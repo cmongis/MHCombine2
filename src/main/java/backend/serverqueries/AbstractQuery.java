@@ -31,9 +31,8 @@ public abstract class AbstractQuery implements Callable<Set<TemporaryEntry>> {
 
     private final Logger logger = Logger.getLogger(this.getClass().getSimpleName());
 
-
     public static final List<TemporaryEntry> NO_ENTRY = Arrays.asList();
-    
+
     @Override
     public Set<TemporaryEntry> call() throws Exception {
         logger.info("Starting query for " + getClass().getSimpleName());
@@ -42,14 +41,9 @@ public abstract class AbstractQuery implements Callable<Set<TemporaryEntry>> {
         logger.info(String.format("End query for %s : %d returned", getClass().getSimpleName(), count));
         return queryServer;
     }
-    
-    
-
 
     protected abstract Set<TemporaryEntry> queryServer();
 
     protected abstract List<TemporaryEntry> processLine(String line);
-    
-    //protected abstract void processLine(String line, Algorithm anAlgorithm);
 
 }

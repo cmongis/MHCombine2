@@ -16,12 +16,12 @@ public enum Algorithm {
     NetMHCpan40("NetMHCpan 4.0"),
     NetMHCpan41("NetMHCpan 4.1"),
     NetMHC34("NetMHC 3.4"),
-    IEDB_netMHCcons("NetMHCcons 1.1"), //IEDB_ann("NetMHC 3.4 = IEDB ann"),
-    IEDB_pickpocket("Pickpocket 1.1"),
-    IEDB_recommended("IEDB Recommended"),
-    IEDB_consensus("IEDB Consensus"),
-    IEDB_smmpmbec(" IEDB SMMPMBEC"),
-    IEDB_smm("IEDB SMM"),
+    IedbNetMHCcons("NetMHCcons 1.1"), //IEDB_ann("NetMHC 3.4 = IEDB ann"),
+    IedbPickpocket("Pickpocket 1.1"),
+    IedbRecommended("IEDB Recommended"),
+    IedbConsensus("IEDB Consensus"),
+    IedbSmmpmbec(" IEDB SMMPMBEC"),
+    IedbSmm("IEDB SMM"),
     SYFPEITHI("SYFPEITHI");
     //BIMAS("BIMAS");
     //@Deprecated

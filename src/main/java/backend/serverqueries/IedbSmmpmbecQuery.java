@@ -40,7 +40,7 @@ public class IedbSmmpmbecQuery extends AbstractIedbQuery {
 	private final Logger logger = LogManager.getLogger(IedbSmmpmbecQuery.class);
 	
 	public IedbSmmpmbecQuery(String sequence, String allel, Integer length) {
-		super(Algorithm.IEDB_smmpmbec,"smmpmbec",sequence, allel, length);
+		super(Algorithm.IedbSmmpmbec,"smmpmbec",sequence, allel, length);
 	}
         
        

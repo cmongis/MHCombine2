@@ -40,7 +40,7 @@ public class IedbNetMHCconsQuery extends AbstractIedbQuery {
 	private final Logger logger = LogManager.getLogger(IedbNetMHCconsQuery.class);
 
 	public IedbNetMHCconsQuery(String sequence, String allel, Integer length) {
-		super(Algorithm.IEDB_netMHCcons,"netmhccons",sequence, allel, length);
+		super(Algorithm.IedbNetMHCcons,"netmhccons",sequence, allel, length);
 	}
 	
         /*

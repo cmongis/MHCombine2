@@ -32,31 +32,27 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
  *
  * @author cyril
  */
-public class NetMHC34Query extends AbstractNetMhcQuery{
-    
-    
+public class NetMHC34Query extends AbstractNetMhcQuery {
+
     private final Logger logger = LogManager.getLogger(this.getClass());
-    
+
     public NetMHC34Query(String sequence, String allel, Integer length) {
-        super(Algorithm.NetMHC34,"/usr/opt/www/pub/CBS/services/NetMHC-3.4/NetMHC.cf",sequence, allel, length);
-        
+        super(Algorithm.NetMHC34, "/usr/opt/www/pub/CBS/services/NetMHC-3.4/NetMHC.cf", sequence, allel, length);
+
         setLengthName("peplen");
         setMasterValue("2");
-        
-    }
-    
-    @Override
-    public String processAllel(String allel) {
-       return allel.replace("*", "");
+
     }
 
-    
-    
-    
-     protected List<TemporaryEntry> processLine(String line) {
-         logger.info(line);
-         //    0  HLA-A*02:01     MHQKRTAM sp_P03126_VE6_H         0.036     33984.93    50.00
-         String allel = this.allel;
+    @Override
+    public String processAllel(String allel) {
+        return allel.replace("*", "");
+    }
+
+    protected List<TemporaryEntry> processLine(String line) {
+        logger.info(line);
+        //    0  HLA-A*02:01     MHQKRTAM sp_P03126_VE6_H         0.036     33984.93    50.00
+        String allel = this.allel;
         String sequence = null;
         Integer position = null;
         Double score = null;
@@ -75,11 +71,10 @@ public class NetMHC34Query extends AbstractNetMhcQuery{
         // allel is returned "HLA-A*01:01" here, even though as input one had to provide "HLA-A01:01".
         //allel = aSplitLine[5];
         sequence = aSplitLine[1];
-        position = Integer.parseInt(aSplitLine[0])+1;
+        position = Integer.parseInt(aSplitLine[0]) + 1;
         score = Double.parseDouble(aSplitLine[3]); // take Aff[nM] 
         TemporaryEntry scoreEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(), score);
-        //TemporaryEntry rankEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(ResultColumn.RANK), score);
-        
+
         return Arrays.asList(scoreEntry);
-     }
+    }
 }

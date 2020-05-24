@@ -158,9 +158,9 @@ public class SyfpeithiQuery extends AbstractQuery {
     protected List<TemporaryEntry> processLine(String line) {
 
         lineProcessor.feed(line);
-        
+
         return NO_ENTRY;
-        
+
     }
 
     private String preprocessFastaSequence(String inputSequence) {
@@ -198,7 +198,7 @@ public class SyfpeithiQuery extends AbstractQuery {
         String currentScore;
 
         public void feed(String line) {
-          
+
             currentPos = extract(RE_POS, line, currentPos);
             currentSequence = extract(RE_LIGAN, line, currentSequence);
             currentScore = extract(RE_SCORE, line, currentScore);
@@ -220,7 +220,7 @@ public class SyfpeithiQuery extends AbstractQuery {
         private void addCurrentEntry() {
             if (currentPos != null && currentSequence != null && currentScore != null) {
                 currentSequence = currentSequence.replaceAll("&nbsp;", "").replaceAll("</td>", ";").replaceAll("<[^<>]*>", "").toUpperCase().trim();
-               
+
                 TemporaryEntry entry = new TemporaryEntry(originalAllel, currentSequence, Integer.decode(currentPos), Algorithm.SYFPEITHI.toColumn(), Double.parseDouble(currentScore));
                 results.add(entry);
             }

@@ -34,7 +34,7 @@ public class IedbRecommendedQuery extends AbstractIedbQuery {
        
 	public IedbRecommendedQuery(String sequence, String allel,
 			Integer length) {
-		super(Algorithm.IEDB_recommended,"recommended",sequence, allel, length);
+		super(Algorithm.IedbRecommended,"recommended",sequence, allel, length);
 	}
 
         

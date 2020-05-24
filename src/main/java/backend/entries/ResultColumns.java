@@ -61,11 +61,11 @@ public class ResultColumns {
         
         Algorithm.NetMHCpan28.toColumn(),
         
-        Algorithm.IEDB_netMHCcons.toColumn(),
-        Algorithm.IEDB_pickpocket.toColumn(),
-        Algorithm.IEDB_recommended.toColumn(),
-        Algorithm.IEDB_consensus.toColumn(),
-        Algorithm.IEDB_smmpmbec.toColumn(),
+        Algorithm.IedbNetMHCcons.toColumn(),
+        Algorithm.IedbPickpocket.toColumn(),
+        Algorithm.IedbRecommended.toColumn(),
+        Algorithm.IedbConsensus.toColumn(),
+        Algorithm.IedbSmmpmbec.toColumn(),
         Algorithm.SYFPEITHI.toColumn()};
 
 }

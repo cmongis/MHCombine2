@@ -27,10 +27,9 @@ import java.util.logging.Level;
 
 public class IedbConsensusQuery extends AbstractIedbQuery {
 	
-	//private final Logger logger = LogManager.getLogger(IedbConsensusQuery.class);
 	
 	public IedbConsensusQuery(String sequence, String allel, Integer length) {
-		super(Algorithm.IEDB_consensus,"consensus",sequence, allel, length);
+		super(Algorithm.IedbConsensus,"consensus",sequence, allel, length);
 	}
 	
        

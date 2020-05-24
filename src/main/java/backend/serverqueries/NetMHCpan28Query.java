@@ -28,22 +28,18 @@ import java.util.List;
  * @author cyril
  */
 public class NetMHCpan28Query extends AbstractNetMhcQuery {
-    
-    
 
-    
-    
     public NetMHCpan28Query(String sequence, String allel, Integer length) {
-        super(Algorithm.NetMHCpan28,"/usr/opt/www/pub/CBS/services/NetMHCpan-2.8/NetMHCpan.cf",sequence, allel, length);
+        super(Algorithm.NetMHCpan28, "/usr/opt/www/pub/CBS/services/NetMHCpan-2.8/NetMHCpan.cf", sequence, allel, length);
     }
-    
+
     @Override
     public String processAllel(String allel) {
-        return allel.replace("*","");
+        return allel.replace("*", "");
     }
-    
-     protected List<TemporaryEntry> processLine(String line) {
-        
+
+    protected List<TemporaryEntry> processLine(String line) {
+
         String sequence = null;
         Integer position = null;
         Double score = null;
@@ -60,12 +56,11 @@ public class NetMHCpan28Query extends AbstractNetMhcQuery {
         }
 
         // allel is returned "HLA-A*01:01" here, even though as input one had to provide "HLA-A01:01".
-        
         sequence = aSplitLine[2];
-        position = Integer.parseInt(aSplitLine[0])+1;
+        position = Integer.parseInt(aSplitLine[0]) + 1;
         score = Double.parseDouble(aSplitLine[5]); // take Aff[nM] 
         TemporaryEntry temporaryEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(), score);
         return Arrays.asList(temporaryEntry);
-     }
-    
+    }
+
 }
