@@ -35,11 +35,11 @@ import org.apache.logging.log4j.Logger;
 import backend.entries.Algorithm;
 import backend.entries.TemporaryEntry;
 
-public class IedbPickPocketQuery extends AbstractIedbQuery {
+public class IedbPickpocketQuery extends AbstractIedbQuery {
 	
-	private final Logger logger = LogManager.getLogger(IedbPickPocketQuery.class);
+	private final Logger logger = LogManager.getLogger(IedbPickpocketQuery.class);
 
-	public IedbPickPocketQuery(String sequence, String allel, Integer length) {
+	public IedbPickpocketQuery(String sequence, String allel, Integer length) {
 		super(Algorithm.IedbPickpocket,"pickpocket",sequence, allel, length);
 	}
 	
