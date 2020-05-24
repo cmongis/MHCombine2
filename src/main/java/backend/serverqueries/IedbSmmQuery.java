@@ -43,7 +43,5 @@ public class IedbSmmQuery extends AbstractIedbQuery {
 		super(Algorithm.IedbSmm,"smm",sequence, allel, length);
 	}
 
-     
-		
-	
+
 }

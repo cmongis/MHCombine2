@@ -19,10 +19,11 @@ public enum Algorithm {
     IedbNetMHCcons("NetMHCcons 1.1"), //IEDB_ann("NetMHC 3.4 = IEDB ann"),
     IedbPickpocket("Pickpocket 1.1"),
     IedbRecommended("IEDB Recommended"),
-    IedbConsensus("IEDB Consensus"),
+    IedbConsensus("IEDB Consensus", ResultColumnSuffix.RANK),
     IedbSmmpmbec(" IEDB SMMPMBEC"),
     IedbSmm("IEDB SMM"),
     SYFPEITHI("SYFPEITHI");
+
     //BIMAS("BIMAS");
     //@Deprecated
     //IEDB_ann("IEDB Annotated"),
@@ -30,7 +31,7 @@ public enum Algorithm {
     //IEDB_netMHCpan("NetMHCpan 2.8");
     private final String printName;
 
-    private String defaultSuffix = ResultColumn.NM;
+    private String defaultSuffix = ResultColumnSuffix.NM;
 
     private Algorithm(String printName) {
         this.printName = printName;

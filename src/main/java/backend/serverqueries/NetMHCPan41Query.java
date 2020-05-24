@@ -7,6 +7,7 @@ package backend.serverqueries;
 
 import backend.entries.Algorithm;
 import backend.entries.ResultColumn;
+import backend.entries.ResultColumnSuffix;
 import backend.entries.TemporaryEntry;
 import static backend.serverqueries.AbstractQuery.NO_ENTRY;
 import java.util.Arrays;
@@ -46,7 +47,7 @@ public class NetMHCPan41Query extends AbstractNetMhcQuery {
         rankEl = Double.parseDouble(aSplitLine[12]);
         
         TemporaryEntry scoreEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(), score);
-        TemporaryEntry rankElEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(ResultColumn.RANK_EL), rankEl);
+        TemporaryEntry rankElEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(ResultColumnSuffix.RANK_EL), rankEl);
         //TemporaryEntry rankBaEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(ResultColumn.RANK_EL), rankBa);
         return Arrays.asList(scoreEntry,rankElEntry);
     }

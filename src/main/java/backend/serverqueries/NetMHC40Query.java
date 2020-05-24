@@ -21,6 +21,7 @@ package backend.serverqueries;
 
 import backend.entries.Algorithm;
 import backend.entries.ResultColumn;
+import backend.entries.ResultColumnSuffix;
 import backend.entries.TemporaryEntry;
 import java.util.Arrays;
 import java.util.List;
@@ -74,7 +75,7 @@ public class NetMHC40Query extends AbstractNetMhcQuery {
         rank = Double.parseDouble((aSplitLine[13]));
         // take Affinity[nM] 
         TemporaryEntry affinityEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(), score);
-        TemporaryEntry rankEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(ResultColumn.RANK), rank);
+        TemporaryEntry rankEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(ResultColumnSuffix.RANK), rank);
         
         return Arrays.asList(rankEntry,affinityEntry);
     }

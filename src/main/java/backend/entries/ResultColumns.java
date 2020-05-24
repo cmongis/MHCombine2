@@ -43,17 +43,17 @@ public class ResultColumns {
     
     
     public static final ResultColumn[] ALL = {
-        Algorithm.NetMHCpan41.toColumn(ResultColumn.RANK_EL),
+        Algorithm.NetMHCpan41.toColumn(ResultColumnSuffix.RANK_EL),
         //Algorithm.NetMHCpan41.toColumn(ResultColumn.RANK_BA),
         Algorithm.NetMHCpan41.toColumn(),
         
-        Algorithm.NetMHC40.toColumn(ResultColumn.RANK),
+        Algorithm.NetMHC40.toColumn(ResultColumnSuffix.RANK),
         Algorithm.NetMHC40.toColumn(),
         
-        Algorithm.NetMHCpan40.toColumn(ResultColumn.RANK),
+        Algorithm.NetMHCpan40.toColumn(ResultColumnSuffix.RANK),
         Algorithm.NetMHCpan40.toColumn(),
         
-        Algorithm.NetMHCpan30.toColumn(ResultColumn.RANK),
+        Algorithm.NetMHCpan30.toColumn(ResultColumnSuffix.RANK),
         Algorithm.NetMHCpan30.toColumn(),
         
         //Algorithm.NetMHC34.toColumn(ResultColumn.RANK), // --> No Rank in this one
@@ -66,6 +66,7 @@ public class ResultColumns {
         Algorithm.IedbRecommended.toColumn(),
         Algorithm.IedbConsensus.toColumn(),
         Algorithm.IedbSmmpmbec.toColumn(),
+        Algorithm.IedbSmm.toColumn(),
         Algorithm.SYFPEITHI.toColumn()};
 
 }

@@ -17,10 +17,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 public class ResultColumn {
     
     
-    public final static String RANK_EL = "(%Rank EL)";
-    public final static String RANK_BA = "(%Rank BA)";
-    public final static String NM = "(nM)";
-    public final static String RANK = "(%Rank)";
     
     
     

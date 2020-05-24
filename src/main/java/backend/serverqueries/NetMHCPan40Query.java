@@ -22,6 +22,7 @@ import backend.entries.TemporaryEntry;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import backend.entries.Algorithm;
 import backend.entries.ResultColumn;
+import backend.entries.ResultColumnSuffix;
 import java.util.Arrays;
 import java.util.List;
 
@@ -60,7 +61,7 @@ public class NetMHCPan40Query extends AbstractNetMhcQuery {
         score = Double.parseDouble(aSplitLine[11]); // take Aff[nM]
         rank = Double.parseDouble(aSplitLine[12]);
         TemporaryEntry scoreEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(), score);
-        TemporaryEntry rankEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(ResultColumn.RANK), rank);
+        TemporaryEntry rankEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(ResultColumnSuffix.RANK), rank);
         //TemporaryEntry rankBaEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(ResultColumn.RANK_EL), rankBa);
         return Arrays.asList(scoreEntry,rankEntry);
     }
