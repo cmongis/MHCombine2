@@ -18,22 +18,13 @@
  */
 package backend.serverqueries;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Set;
-
-import org.apache.http.HttpEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import backend.entries.Algorithm;
 import backend.entries.TemporaryEntry;
+import java.util.Arrays;
+import java.util.List;
 
 public class IedbRecommendedQuery extends AbstractIedbQuery {
 	
@@ -98,15 +89,15 @@ public class IedbRecommendedQuery extends AbstractIedbQuery {
 	}*/
 
 	@Override
-	protected void processLine(String line, Algorithm algorithm) {
+	protected List<TemporaryEntry> processLine(String line) {
 		String[] entries = line.split("\t");
 		if (entries.length < 8) {
 			logger.error("Output line "+line+" contains less than the mandatory 8 entries (allele, seq_num, start, end, length, peptide, method, precentile_rank, [other]), did maybe something change??");
-			return;
+			return Arrays.asList();
 		}
 		// Line:
 		// allele, seq_num, start, end, length, peptide, method, percentile_rank, ann_ic50, ann_rank, smm_ic50, smm_rank, comblib_sidney2008_score, comblib_sidney2008_rank, netmhcpan_ic50, netmhcpan_rank
-		TemporaryEntry entry = new TemporaryEntry(entries[0], entries[5], Integer.parseInt(entries[2]), algorithm, Double.parseDouble(entries[8]));
-		results.add(entry);
+		TemporaryEntry entry = new TemporaryEntry(entries[0], entries[5], Integer.parseInt(entries[2]), getAlgorithm().toColumn(), Double.parseDouble(entries[8]));
+		return Arrays.asList(entry);
 	}
 }

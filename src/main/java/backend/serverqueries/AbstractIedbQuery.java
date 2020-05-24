@@ -35,8 +35,10 @@ import backend.serverqueries.exceptions.LineProcessingException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -57,7 +59,6 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
     protected final String allel;
     protected final Integer length;
 
-    protected final Set<TemporaryEntry> results;
 
     final Algorithm algoritm;
 
@@ -65,11 +66,15 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
 
     private final String formDataField;
 
+    
+   private final Set<TemporaryEntry> results = new HashSet<>();
+
+    
+    
     public AbstractIedbQuery(Algorithm algorithm, String formDataField, String sequence, String allel, Integer length) {
         this.sequence = sequence;
         this.allel = allel;
         this.length = length;
-        this.results = new HashSet<TemporaryEntry>();
         this.algoritm = algorithm;
         this.formDataField = formDataField;
     }
@@ -110,7 +115,10 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
                 }
                 if (processing) {
                     try {
-                        processLine(line, getAlgorithm());
+                        for(TemporaryEntry entry : processLine(line)) {
+                            results.add(entry);
+                        }
+                        //processLine(line, getAlgorithm());
                     } catch (Exception e) {
                         throw new LineProcessingException(getAlgorithm(), line, e);
                     }
@@ -150,15 +158,17 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
         return formDataField;
     }
 
-    protected void processLine(String line, Algorithm algorithm) {
+    protected List<TemporaryEntry> processLine(String line) {
         String[] entries = line.split("\t");
         if (entries.length < 7) {
             logger().severe("Output line " + line + " contains less than the mandatory 7 entries (allele, seq_num, start, end, length, peptide, ic50), did maybe something change??");
-            return;
+            return Arrays.asList();
         }
         // Line:
         // allele, seq_num, start, end, length, peptide, score, [other stuff]
-        TemporaryEntry entry = new TemporaryEntry(allel, entries[5], Integer.parseInt(entries[2]), algorithm, Double.parseDouble(entries[6]));
-        results.add(entry);
+        TemporaryEntry entry = new TemporaryEntry(allel, entries[5], Integer.parseInt(entries[2]), getAlgorithm().toColumn(), Double.parseDouble(entries[6]));
+        
+        return Arrays.asList(entry);
+        
     }
 }

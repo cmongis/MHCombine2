@@ -18,6 +18,7 @@
  */
 package backend.serverqueries;
 
+import backend.entries.Algorithm;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -35,152 +36,302 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import backend.entries.TemporaryEntry;
+import backend.serverqueries.exceptions.LineProcessingException;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
+import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 
 public abstract class AbstractNetMhcQuery extends AbstractQuery {
-	
-	private final Logger logger = LogManager.getLogger(AbstractNetMhcQuery.class);
-	
-	// form we want to query (the same for all NetMHC servers)
-	private final String baseURL = "http://www.cbs.dtu.dk";
-	private final String queryForm = "/cgi-bin/webface2.fcgi";
-	
-	// Query specific parameters
-	protected final String sequence;
-	protected final String allel;
-	protected final Integer length;
 
-	// storing the final result
-	protected final Set<TemporaryEntry> results;
+    private final Logger logger = LogManager.getLogger(AbstractNetMhcQuery.class);
 
-	public AbstractNetMhcQuery(String sequence, String allel, Integer length) {
-		this.sequence = sequence;
-                
-		this.allel = allel;
-		this.length = length;
-		this.results = new HashSet<TemporaryEntry>();
-                logger.info("Creating NetMHC query");
-	}
+    // form we want to query (the same for all NetMHC servers)
+    private final String baseURL = "http://www.cbs.dtu.dk";
+    private final String queryForm = "/cgi-bin/webface2.fcgi";
 
-	@Override
-	protected Set<TemporaryEntry> queryServer() {
-		
-		// Step 1: Submit Job
-		HttpEntity entity = preparePayload();
-		HttpPost postRequest = new HttpPost(baseURL + queryForm);
-		postRequest.setEntity(entity);
-                //postRequest.setHeader("Referer", "http://www.cbs.dtu.dk/services/NetMHC-3.4/");
-                postRequest.setHeader("Content-Type","multipart/form-data; boundary=---------------------------183079827324139952612037066");
-                postRequest.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"); 
-                postRequest.setHeader("Accept-Language","en-US,en;q=0.5");
-                postRequest.setHeader("Connection", "keep-alive");
-                postRequest.setHeader("User-Agent","Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0");
-                //postRequest.setHeader("Cookie","__utma=151498347.2065779939.1499803940.1499803940.1499803940.1; __utmb=151498347.3.10.1499803940; __utmc=151498347; __utmz=151498347.1499803940.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); __utmt=1");
-		String location = null;
-		int statuscode = HttpStatus.SC_OK;
-                System.out.println(postRequest.toString());
-		CloseableHttpClient client = HttpClients.createSystem();
-		CloseableHttpResponse originalResponse = null;
-		try {
-			// execute POST to submit Job
-			originalResponse = client.execute(postRequest);
-			statuscode = originalResponse.getStatusLine().getStatusCode();
-			if (statuscode == HttpStatus.SC_OK) {
-				// No redirect? Process the original result.
-                                logger.info("No redirect, processing the result.");
-				processResponse(originalResponse);
-				return results;
-			} else if (statuscode == HttpStatus.SC_MOVED_TEMPORARILY) {
-                                logger.info("Received redirect. Querying the job id ");
-				// redirect, as expected. They show us the jobId of our result 				// in the Location header
-				Header[] header = originalResponse.getHeaders("Location");
-				if (header.length == 0) {
-					// no redirect location, this means no idea where our result is.
-					// abort.
-					 logger.error("Retrieving header for this query returned no location. Cannot process this redirect.");
-					return results;
-				}
-				location = header[0].getValue();
-			} else {
-				logger.warn("Attempted to POST to server, but got back status code of "+statuscode+" with Status line "+originalResponse.getStatusLine());
-			}
-			
-			EntityUtils.consume(originalResponse.getEntity());
-		} catch (IOException e) {
-			logger.error("Exception while executing POST. Abort.", e);
-			return results; // do not recover from this.
-		} finally {
-			if (originalResponse != null) {
-				try {
-					originalResponse.close();
-				} catch (IOException e) {
-					logger.error("Exception while closing POST's original response. Abort.", e);
-					return results; // do not recover from this.
-				}
-			}
-		}
+    // Query specific parameters
+    protected final String sequence;
+    protected final String allel;
+    protected final Integer length;
 
-		
-		// Step 2: Query JobId until Result is here
-		
+    // storing the final result
+    private final Set<TemporaryEntry> results;
 
-		// if we do not have any redirect location, we do not know where our
-		// results are...
-		if (location == null) {
-			logger.warn("No redirect location! Abort.");
-			return results; // cannot recover
-		}
- 		boolean responseIsWait = true;
-		while (responseIsWait) {
-			HttpGet getRequest = new HttpGet(baseURL + location);
-			CloseableHttpResponse response = null;
-			try {
-				response = client.execute(getRequest);
-				statuscode = response.getStatusLine().getStatusCode();
-				if (statuscode == HttpStatus.SC_OK) {
-					responseIsWait = processResponse(response);
-				} else {
-					logger.error("StatusLine returned was "+response.getStatusLine()+". Abort.");
-					break; // do not recover?
-				}
-				// needed to properly close connection.
-				EntityUtils.consume(response.getEntity());
-			} catch (IOException e) {
-				logger.error("Exception happened while querying for results. Abort.", e);
-				return results; // do not recover from this.
-			} finally {
-				try {
-					response.close();
-				} catch (IOException e) {
-					logger.error("Exception happened while closing response. Abort.", e);
-					return results; // do not recover from this.
-				}
-			}
+    private Algorithm algorithm;
 
-			if (responseIsWait) {
-				try {
-                                        logger.info("waiting 2 seconds");
-					Thread.sleep(2000);
-				} catch (InterruptedException e) {
-					logger.error("Interrupted while sleeping!", e);
-				}
-			}
-		}
+    // form parameters names
+    private final String configFileName = "configfile";
+    private final String inputTypeName = "inp";
+    private final String sequenceName = "SEQPASTE";
+    private final String sequenceFileName = "SEQSUB"; // not required
+    private String lengthName = "len";
+    private final String peptideName = "PEPPASTE";
+    private final String peptideFileName = "PEPSUB"; // not required
+    private final String masterName = "master";
+    private final String slave0Name = "slave0";
+    private final String alleleName = "allele";
+    private final String thresholdStrongName = "thrs";
+    private final String thresholdWeakName = "thrw";
 
-		return results;
-	}
+    private static final Integer ALL_LENGTHS_CODE = 0;
+    private static final String ALL_LENGTH_VALUE = "8,9,10,11";
 
-	/*
-	 * prepare payload for POST request to NetMHC Servers
-	 */
-	protected abstract HttpEntity preparePayload();
+    // form parameters default
+    private final String configFileValue;
+    private final String inputTypeValue = "0"; // 0 means FASTA, 1 means Peptides
+    private final File sequenceFileValue = new File(new File(System.getProperty("java.io.tmpdir")), "netmhcempty"); // not required
+    private final String peptideValue = "";
+    private String masterValue = "1";
+    private final String thresholdStrongValue = "0.5";
+    private final String thresholdWeakValue = "2";
 
-	/*
-	 * look for line containing html title -> if it states "prediction results", you have results
-	 * else you have to repeat querying the URL
-	 * 
-	 * return true if results are NOT available, else false!
-	 */
-	protected abstract boolean processResponse(CloseableHttpResponse response) throws IllegalStateException, IOException;
-	
+    private final String boundary = "---------------------------183079827324139952612037066";
+
+    private final String netMhcAllel;
+
+    private final Pattern LINE_RE = Pattern.compile("^\\d+\\s+[\\w\\d\\-\\*\\:]+\\s+");
+
+    public AbstractNetMhcQuery(Algorithm algorithm, String configFile, String sequence, String allel, Integer length) {
+
+        this.algorithm = algorithm;
+        this.sequence = sequence;
+        this.configFileValue = configFile;
+        this.allel = allel;
+        this.length = length;
+        this.results = new HashSet<TemporaryEntry>();
+        logger.info("Creating NetMHC query");
+        netMhcAllel = processAllel(allel);
+
+        if (sequenceFileValue.exists() == false) {
+            try {
+                sequenceFileValue.createNewFile();
+            } catch (IOException ex) {
+                java.util.logging.Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    public Logger logger() {
+        return logger;
+    }
+
+    public void setLengthName(String lengthName) {
+        this.lengthName = lengthName;
+    }
+
+    public void setMasterValue(String masterValue) {
+        this.masterValue = masterValue;
+    }
+
+    protected HttpEntity preparePayload() {
+
+        String lengthValue = length == ALL_LENGTHS_CODE ? ALL_LENGTH_VALUE : length.toString();
+
+        MultipartEntityBuilder builder = MultipartEntityBuilder
+                .create()
+                .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+                .setBoundary(boundary)
+                .addTextBody(configFileName, configFileValue)
+                .addTextBody(sequenceName, sequence)
+                .addBinaryBody(sequenceFileName, sequenceFileValue, ContentType.APPLICATION_OCTET_STREAM, "")
+                .addTextBody(lengthName, lengthValue)
+                //.addBinaryBody(sequenceFileName, sequenceFileValue, ContentType.APPLICATION_OCTET_STREAM, "") // file may not be null
+
+                //.addBinaryBody(peptideFileName, sequenceFileValue, ContentType.APPLICATION_OCTET_STREAM, "") // file may not be null
+                .addTextBody(masterName, masterValue)
+                .addTextBody(slave0Name, netMhcAllel)
+                .addTextBody(alleleName, netMhcAllel);
+
+        if (!getAlgorithm().equals(Algorithm.NetMHC34)) {
+            builder.addTextBody(inputTypeName, inputTypeValue)
+                    .addTextBody(peptideName, peptideValue)
+                    .addBinaryBody(peptideFileName, sequenceFileValue, ContentType.APPLICATION_OCTET_STREAM, "")
+                    .addTextBody(thresholdStrongName, thresholdStrongValue)
+                    .addTextBody(thresholdWeakName, thresholdWeakValue);
+            ;
+
+        }
+
+        // specific entity building
+        builder = preparePayload(builder);
+
+        HttpEntity entity = builder.build();
+
+        try {
+            entity.writeTo(System.out);
+
+        } catch (IOException e) {
+
+        }
+        return entity;
+    }
+
+    protected MultipartEntityBuilder preparePayload(MultipartEntityBuilder builder) {
+        return builder;
+    }
+
+    public Algorithm getAlgorithm() {
+        return algorithm;
+    }
+
+    @Override
+    protected Set<TemporaryEntry> queryServer() {
+
+        // Step 1: Submit Job
+        HttpEntity entity = preparePayload();
+        HttpPost postRequest = new HttpPost(baseURL + queryForm);
+        postRequest.setEntity(entity);
+        //postRequest.setHeader("Referer", "http://www.cbs.dtu.dk/services/NetMHC-3.4/");
+        postRequest.setHeader("Content-Type", "multipart/form-data; boundary=---------------------------183079827324139952612037066");
+        postRequest.setHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+        postRequest.setHeader("Accept-Language", "en-US,en;q=0.5");
+        postRequest.setHeader("Connection", "keep-alive");
+        postRequest.setHeader("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0");
+        //postRequest.setHeader("Cookie","__utma=151498347.2065779939.1499803940.1499803940.1499803940.1; __utmb=151498347.3.10.1499803940; __utmc=151498347; __utmz=151498347.1499803940.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); __utmt=1");
+        String location = null;
+        int statuscode = HttpStatus.SC_OK;
+        System.out.println(postRequest.toString());
+        CloseableHttpClient client = HttpClients.createSystem();
+        CloseableHttpResponse originalResponse = null;
+        try {
+            // execute POST to submit Job
+            originalResponse = client.execute(postRequest);
+            statuscode = originalResponse.getStatusLine().getStatusCode();
+            if (statuscode == HttpStatus.SC_OK) {
+                // No redirect? Process the original result.
+                logger.info("No redirect, processing the result.");
+                processResponse(originalResponse);
+                return results;
+            } else if (statuscode == HttpStatus.SC_MOVED_TEMPORARILY) {
+                logger.info("Received redirect. Querying the job id ");
+                // redirect, as expected. They show us the jobId of our result 				// in the Location header
+                Header[] header = originalResponse.getHeaders("Location");
+                if (header.length == 0) {
+                    // no redirect location, this means no idea where our result is.
+                    // abort.
+                    logger.error("Retrieving header for this query returned no location. Cannot process this redirect.");
+                    return results;
+                }
+                location = header[0].getValue();
+            } else {
+                logger.warn("Attempted to POST to server, but got back status code of " + statuscode + " with Status line " + originalResponse.getStatusLine());
+            }
+
+            EntityUtils.consume(originalResponse.getEntity());
+        } catch (IOException e) {
+            logger.error("Exception while executing POST. Abort.", e);
+            return results; // do not recover from this.
+        } finally {
+            if (originalResponse != null) {
+                try {
+                    originalResponse.close();
+                } catch (IOException e) {
+                    logger.error("Exception while closing POST's original response. Abort.", e);
+                    return results; // do not recover from this.
+                }
+            }
+        }
+
+        // Step 2: Query JobId until Result is here
+        // if we do not have any redirect location, we do not know where our
+        // results are...
+        if (location == null) {
+            logger.warn("No redirect location! Abort.");
+            return results; // cannot recover
+        }
+        boolean responseIsWait = true;
+        while (responseIsWait) {
+            HttpGet getRequest = new HttpGet(baseURL + location);
+            CloseableHttpResponse response = null;
+            try {
+                response = client.execute(getRequest);
+                statuscode = response.getStatusLine().getStatusCode();
+                if (statuscode == HttpStatus.SC_OK) {
+                    responseIsWait = processResponse(response);
+                } else {
+                    logger.error("StatusLine returned was " + response.getStatusLine() + ". Abort.");
+                    break; // do not recover?
+                }
+                // needed to properly close connection.
+                EntityUtils.consume(response.getEntity());
+            } catch (IOException e) {
+                logger.error("Exception happened while querying for results. Abort.", e);
+                return results; // do not recover from this.
+            } finally {
+                try {
+                    response.close();
+                } catch (IOException e) {
+                    logger.error("Exception happened while closing response. Abort.", e);
+                    return results; // do not recover from this.
+                }
+            }
+
+            if (responseIsWait) {
+                try {
+                    logger.info("waiting 2 seconds");
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    logger.error("Interrupted while sleeping!", e);
+                }
+            }
+        }
+
+        return results;
+    }
+
+    protected boolean processResponse(CloseableHttpResponse response) throws IllegalStateException, IOException {
+
+        logger.info("Processing response");
+
+        boolean resultsAvailable = false;
+        HttpEntity responseEntity = response.getEntity();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(responseEntity.getContent()));
+
+        String line = reader.readLine();
+
+        Pattern predictionPattern = getPredictionRecognitionPattern();
+
+        boolean wasWaitingPage = true;
+
+        while (line != null) {
+            line = line.trim();
+            
+            if (line.contains("prediction results")) {
+                wasWaitingPage = false;
+            }
+
+            if (!wasWaitingPage) {
+                Matcher matcher = predictionPattern.matcher(line);
+
+                if (matcher.find()) {
+                    try {
+                        for (TemporaryEntry entry : processLine(line)) {
+                            results.add(entry);
+                        }
+                    } catch (Exception e) {
+                        throw new LineProcessingException(getAlgorithm(), line, e);
+                    }
+                }
+            }
+            line = reader.readLine();
+        }
+
+        EntityUtils.consume(responseEntity);
+        return wasWaitingPage;
+    }
+
+    protected Pattern getPredictionRecognitionPattern() {
+        return LINE_RE;
+    }
+
+    protected String processAllel(String allel) {
+        return allel.replace("*", "").replace(":", "");
+    }
 
 }

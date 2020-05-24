@@ -43,55 +43,7 @@ public class IedbSmmpmbecQuery extends AbstractIedbQuery {
 		super(Algorithm.IEDB_smmpmbec,"smmpmbec",sequence, allel, length);
 	}
         
-        /*
-	public Set<TemporaryEntry> queryServer() {
-
-		CloseableHttpClient client = HttpClients.createSystem();
-		
-		HttpPost postRequest = new HttpPost(url);
-		HttpEntity entity = getFormData("smmpmbec");
-		postRequest.setEntity(entity);
-		
-		CloseableHttpResponse response = null;
-		try {
-			response = client.execute(postRequest);
-			
-			// consume input and create result.
-			BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-			String line = null;
-			boolean processing = false;
-			do {
-				line = reader.readLine();
-				if (line == null) {
-					break;
-				}
-				if (processing) {
-					processLine(line, Algorithm.IEDB_smmpmbec);
-				} else {
-					if (line.startsWith("allele")) {
-						// next line will be first dataset.
-						processing = true;
-					}
-				}
-			} while (true);
-			
-			
-			EntityUtils.consume(response.getEntity());
-		} catch (IOException e) {
-			logger.error("Exception happened while executing POST request. Abort.", e);
-		} finally {
-			if (response != null) {
-				try {
-					response.close();
-				} catch (IOException e) {
-					logger.error("Exception happened while closing response. Abort.", e);
-				}
-			}
-		}
-		
-		return results;
-
-	}*/
+       
 		
 	
 }

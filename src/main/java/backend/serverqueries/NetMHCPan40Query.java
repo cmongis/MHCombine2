@@ -21,26 +21,27 @@ package backend.serverqueries;
 import backend.entries.TemporaryEntry;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import backend.entries.Algorithm;
-import utils.Constants;
+import backend.entries.ResultColumn;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
  * @author cyril
  */
-public class NetMHCPan40Query extends NetMHCPan30Query {
+public class NetMHCPan40Query extends AbstractNetMhcQuery {
     
     public NetMHCPan40Query(String sequence, String allel, Integer length) {
-        super(sequence, allel, length);
-        setConfigFile("/usr/opt/www/pub/CBS/services/NetMHCpan-4.0/NetMHCpan.cf");
-         this.algorithm = Algorithm.NetMHCpan40;
+        super(Algorithm.NetMHCpan40,"/usr/opt/www/pub/CBS/services/NetMHCpan-4.0/NetMHCpan.cf",sequence, allel, length);
+        
     }
     
-     public String processAllel(String allel) {
+    public String processAllel(String allel) {
         return allel.replace("*", "");
     }
      
     @Override
-    protected void processLine(String line, Algorithm anAlgorithm) {
+    protected List<TemporaryEntry> processLine(String line) {
         // Line contains (space separated)
         // "  Pos          HLA         Peptide       Core Of Gp Gl Ip Il        Icore        Identity   Score Aff(nM)   %Rank  BindLevel"
         //     1  HLA-A*01:01        SYFPEITH  -SYFPEITH  0  0  0  0  1     SYFPEITH        Sequence 0.02170 39535.2   60.00
@@ -49,25 +50,19 @@ public class NetMHCPan40Query extends NetMHCPan30Query {
         String sequence = null;
         Integer position = null;
         Double score = null;
-       
+        Double rank = null;
         String aLineToWork = line.trim().replaceAll("\\s+", " ");
         String[] aSplitLine = aLineToWork.split(" ");
-        if (aSplitLine.length < 13) {
-            logger.warn("not enough input! " + aLineToWork);
-            return;
-        } /*else if (aSplitLine.length > 15) {
-            // Strong and weak binders have last entry "<= WB", which gives two fields in the array!
-            logger.warn("too much input! " + aLineToWork);
-            return;
-        }*/
-
-        // allel is returned "HLA-A*01:01" here, even though as input one had to provide "HLA-A01:01".
-        allel = this.allel; //aSplitLine[1];
+        
+        allel = this.allel; 
         sequence = aSplitLine[2];
         position = Integer.parseInt(aSplitLine[0]);
-        score = Double.parseDouble(aSplitLine[12]); // take Aff[nM] 
-        TemporaryEntry temporaryEntry = new TemporaryEntry(allel, sequence, position, anAlgorithm, score);
-        results.add(temporaryEntry);
+        score = Double.parseDouble(aSplitLine[11]); // take Aff[nM]
+        rank = Double.parseDouble(aSplitLine[12]);
+        TemporaryEntry scoreEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(), score);
+        TemporaryEntry rankEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(ResultColumn.RANK), rank);
+        //TemporaryEntry rankBaEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(ResultColumn.RANK_EL), rankBa);
+        return Arrays.asList(scoreEntry,rankEntry);
     }
     
     protected MultipartEntityBuilder preparePayload(MultipartEntityBuilder builder) {

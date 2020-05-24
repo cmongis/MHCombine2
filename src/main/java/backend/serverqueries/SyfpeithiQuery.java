@@ -53,8 +53,8 @@ public class SyfpeithiQuery extends AbstractQuery {
     private final String fastaHeaderStartChar = ">";
     private final String fastaCommentStartChar = ";";
 
-    private String baseURL = "http://www.syfpeithi.de";
-    private String queryForm = "/bin/MHCServer.dll/EpitopePrediction?";
+    private final String baseURL = "http://www.syfpeithi.de";
+    private final String queryForm = "/bin/MHCServer.dll/EpitopePrediction?";
 
     private final String sequence;
     private final String originalAllel;
@@ -125,7 +125,7 @@ public class SyfpeithiQuery extends AbstractQuery {
                     //	processLine(entryLine, Algorithm.SYFPEITHI);
 
                     //}
-                    processLine(line, Algorithm.SYFPEITHI);
+                    processLine(line);
                 } else if (oneLineBeforeProcessing) {
                     // next line will be dataset
                     processing = true;
@@ -155,29 +155,12 @@ public class SyfpeithiQuery extends AbstractQuery {
     }
 
     @Override
-    protected void processLine(String line, Algorithm algorithm) {
+    protected List<TemporaryEntry> processLine(String line) {
 
         lineProcessor.feed(line);
-
-        // Line:
-        // position, Subsequence, Score
-        // first, remove all "&nbsp" characters between the sequence elements. Then mark the different sections via translating "</td>" to ";", then remove all html tags with the last regex
-        /*
-                line = line.replaceAll("&nbsp;", "").replaceAll("</td>", ";").replaceAll("<[^<>]*>", "");
-
-		if (line.isEmpty()) {
-			logger.info("SYFPEITHI output line is empty after clearing out HTML. Abort.");
-			return;
-		}
-		
-		String[] entries = line.split(";");
-		if (entries.length != 3) {
-			logger.error("Output line "+line+" contains less or more than the mandatory 3 table entries (position, Subsequence, Score), did maybe something change??");
-			return;
-		}
-
-		TemporaryEntry entry = new TemporaryEntry(originalAllel, entries[1], Integer.parseInt(entries[0]), algorithm, Double.parseDouble(entries[2]));
-		results.add(entry);*/
+        
+        return NO_ENTRY;
+        
     }
 
     private String preprocessFastaSequence(String inputSequence) {
@@ -200,11 +183,11 @@ public class SyfpeithiQuery extends AbstractQuery {
         }
     }
 
-    final static Pattern posRE = Pattern.compile("<td class=\"pos\">(\\d+)</td>");
+    private final static Pattern RE_POS = Pattern.compile("<td class=\"pos\">(\\d+)</td>");
 
-    final static Pattern scoreRE = Pattern.compile("<td class=\"score\">([\\d\\-]+)</td>");
+    private final static Pattern RE_SCORE = Pattern.compile("<td class=\"score\">([\\d\\-]+)</td>");
 
-    final static Pattern liganRE = Pattern.compile("<td class=\"ligand\">(.+)</td>");
+    private final static Pattern RE_LIGAN = Pattern.compile("<td class=\"ligand\">(.+)</td>");
 
     private class LineProcessor {
 
@@ -216,9 +199,9 @@ public class SyfpeithiQuery extends AbstractQuery {
 
         public void feed(String line) {
           
-            currentPos = extract(posRE, line, currentPos);
-            currentSequence = extract(liganRE, line, currentSequence);
-            currentScore = extract(scoreRE, line, currentScore);
+            currentPos = extract(RE_POS, line, currentPos);
+            currentSequence = extract(RE_LIGAN, line, currentSequence);
+            currentScore = extract(RE_SCORE, line, currentScore);
 
             if (isTheEnd(line)) {
 
@@ -238,7 +221,7 @@ public class SyfpeithiQuery extends AbstractQuery {
             if (currentPos != null && currentSequence != null && currentScore != null) {
                 currentSequence = currentSequence.replaceAll("&nbsp;", "").replaceAll("</td>", ";").replaceAll("<[^<>]*>", "").toUpperCase().trim();
                
-                TemporaryEntry entry = new TemporaryEntry(originalAllel, currentSequence, Integer.decode(currentPos), Algorithm.SYFPEITHI, Double.parseDouble(currentScore));
+                TemporaryEntry entry = new TemporaryEntry(originalAllel, currentSequence, Integer.decode(currentPos), Algorithm.SYFPEITHI.toColumn(), Double.parseDouble(currentScore));
                 results.add(entry);
             }
         }
