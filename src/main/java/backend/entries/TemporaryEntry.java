@@ -26,13 +26,13 @@ public class TemporaryEntry {
 
 
 	private final EntryKey key;
-	private final Algorithm algorithm;
+	private final ResultColumn column;
 	private final double score;
 
 	
-	public TemporaryEntry(String allel, String sequence, int position, Algorithm algorithm, double score) {
+	public TemporaryEntry(String allel, String sequence, int position, ResultColumn column, double score) {
 		this.key = new EntryKey(allel, sequence, position);
-		this.algorithm = algorithm;
+		this.column = column;
 		this.score = score;
 	}
 	
@@ -58,11 +58,13 @@ public class TemporaryEntry {
 	}
 
 
-
-
+        public ResultColumn getColumn() {
+            return column;
+        }
+        /*
 	public Algorithm getAlgorithm() {
-		return algorithm;
-	}
+		return column;
+	}*/
 
 
 
@@ -98,7 +100,7 @@ public class TemporaryEntry {
 	public int hashCode() {
 		HashCodeBuilder hcb = new HashCodeBuilder(23, 19);
 		hcb.append(key);
-		hcb.append(algorithm);
+		hcb.append(column);
 		return hcb.toHashCode();
 	}
 
@@ -112,7 +114,7 @@ public class TemporaryEntry {
 		sb.append("position="+getPosition()+", ");
 		sb.append("sequence=\""+getSequence()+"\", ");
 		sb.append("length="+getLength()+"; ");
-		sb.append("algorithm="+algorithm+"; ");
+		sb.append("algorithm="+column+"; ");
 		sb.append("score="+score);
 		return sb.toString();
 	}

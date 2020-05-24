@@ -28,7 +28,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 public final class ResultEntry {
 
 	private final EntryKey key;
-	private final Map<Algorithm, Double> scores;
+	private final Map<ResultColumn, Double> scores;
 	
         
         
@@ -57,12 +57,12 @@ public final class ResultEntry {
 		return key;
 	}
 
-	public Double getScore(Algorithm algo) {
-		return scores.get(algo);
+	public Double getScore(ResultColumn column) {
+		return scores.get(column);
 	}
 
-	public void setScore(Algorithm algo, double score) {
-		scores.put(algo, score);
+	public void setScore(ResultColumn column, double score) {
+		scores.put(column, score);
 	}
 
 
@@ -105,11 +105,11 @@ public final class ResultEntry {
 		sb.append("sequence=\""+getSequence()+"\", ");
 		sb.append("length="+getLength()+"; ");
                 
-                for(Algorithm a : Algorithm.values()) {
+                for(ResultColumn column : ResultColumns.ALL) {
                     sb
-                            .append(a.name())
+                            .append(column.toString())
                             .append("=")
-                            .append(scores.get(a))
+                            .append(scores.get(column))
                             .append(", ");
                 }
                 /*
