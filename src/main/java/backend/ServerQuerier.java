@@ -50,6 +50,8 @@ import org.apache.logging.log4j.Logger;
 import backend.entries.Algorithm;
 import utils.Util;
 import backend.entries.EntryKey;
+import backend.entries.ResultColumn;
+import backend.entries.ResultColumns;
 import backend.entries.ResultEntry;
 import backend.entries.TemporaryEntry;
 import backend.serverqueries.AbstractQuery;
@@ -196,7 +198,7 @@ public class ServerQuerier extends HttpServlet {
 						value = new ResultEntry(temp.getAllel(), temp.getSequence(), temp.getPosition());
 						results.put(temp.getKey(), value);
 					}
-					value.setScore(temp.getAlgorithm(), temp.getScore());
+					value.setScore(temp.getColumn(), temp.getScore());
 				}
 			}
                         executor.shutdown();
@@ -248,8 +250,8 @@ public class ServerQuerier extends HttpServlet {
 	    writer.append(delimiter);
 	    writer.append("Sequence");
 	    writer.append(delimiter);
-	    for (Algorithm algo : Algorithm.values()) {
-	    	writer.append(algo.toString());
+	    for (ResultColumn column : ResultColumns.ALL) {
+	    	writer.append(column.toString());
 	    	writer.append(delimiter);
 	    }
 	    writer.newLine();
@@ -265,11 +267,11 @@ public class ServerQuerier extends HttpServlet {
 	    	writer.append(delimiter);
 
 	    	ResultEntry aResult = results.get(anEntry);
-	        for (Algorithm algo : Algorithm.values()) {
-	        	Double score = aResult.getScore(algo);
+	        for (ResultColumn column : ResultColumns.ALL) {
+	        	Double score = aResult.getScore(column);
 	        	String field = "N/A";
 	        	if (score != null) {
-	        		field = escapeForCSV(aResult.getScore(algo).toString(), delimiter);
+	        		field = escapeForCSV(aResult.getScore(column).toString(), delimiter);
 	        	}
 	            writer.append(field);
 	            writer.append(delimiter);

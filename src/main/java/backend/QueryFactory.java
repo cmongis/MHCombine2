@@ -33,7 +33,7 @@ import backend.serverqueries.NetMHC34Query;
 import backend.serverqueries.NetMHCPan30Query;
 import backend.serverqueries.NetMHCPan40Query;
 import backend.serverqueries.NetMHCPan41Query;
-import backend.serverqueries.NetMHCQuery;
+import backend.serverqueries.NetMHC40Query;
 import backend.serverqueries.SyfpeithiQuery;
 
 public class QueryFactory {
@@ -47,7 +47,7 @@ public class QueryFactory {
     public AbstractQuery createQueryForServer(String server, String sequence, String allel, Integer length) {
         switch (server) {
             case "NetMHC40":
-                return new NetMHCQuery(sequence, allel, length);
+                return new NetMHC40Query(sequence, allel, length);
             case "NetMHC34":
                 return new NetMHC34Query(sequence, allel, length);
             case "NetMHCpan40":

@@ -25,9 +25,6 @@ import utils.Constants;
  *
  * Copyright 2018 Angelika Riemer, Maria Bonsack
  */
-
-
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -45,7 +42,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -57,203 +53,231 @@ import backend.entries.TemporaryEntry;
 import backend.serverqueries.AbstractQuery;
 import java.util.concurrent.TimeUnit;
 import backend.entries.Algorithm;
+import backend.entries.ResultColumn;
+import backend.entries.ResultColumns;
+import java.util.Arrays;
+import java.util.stream.Stream;
 
 /**
  * Servlet implementation class ServerQuerier
  */
-
 public class QueryJob implements Job {
-	private static final long serialVersionUID = 1L;
-	
-	private static final Logger logger = LogManager.getLogger(QueryJob.class);
-	
-        private static final int THREAD_POOL_SIZE = 15;
-        
-	private OutputStream outputStream;
-        
-        private String[] servers;
-        
-        private String allel;
-        
-        private String sequence;
-        
-        private String len;
-        
-        private boolean succeeded = false;
-        
-        private boolean finished = false;
-        
-        private QueryObserver observer;
-        
-        private String id;
-        
-        private int totalQueries;
-        
-        private int progress = 0;
-        
-          private Throwable error;
-        
-          private String fileName;
-        
-        private long creation = System.currentTimeMillis();
-        
-        public void configure(String sequence, String allel, String len, String... servers) {
-            this.sequence = sequence;
-            this.allel = allel;
-            this.len = len;
-            this.servers = servers;
-           
-        }
-         @Override
-        public void run() {
-            observer.setStarted();
-            
-            Map<EntryKey, ResultEntry> results = createAndExecuteQueries(servers, sequence, allel, len);
-                    try { 
+
+    private static final long serialVersionUID = 1L;
+
+    private static final Logger logger = LogManager.getLogger(QueryJob.class);
+
+    private static final int THREAD_POOL_SIZE = 15;
+
+    private OutputStream outputStream;
+
+    private String[] servers;
+
+    private String allel;
+
+    private String sequence;
+
+    private String len;
+
+    private boolean succeeded = false;
+
+    private boolean finished = false;
+
+    private QueryObserver observer;
+
+    private String id;
+
+    private int totalQueries;
+
+    private int progress = 0;
+
+    private Throwable error;
+
+    private String fileName;
+
+    private long creation = System.currentTimeMillis();
+
+    private boolean adaptiveColumn = true;
+
+    public void configure(String sequence, String allel, String len, String... servers) {
+        this.sequence = sequence;
+        this.allel = allel;
+        this.len = len;
+        this.servers = servers;
+    }
+
+    @Override
+    public void run() {
+        observer.setStarted();
+
+        Map<EntryKey, ResultEntry> results = createAndExecuteQueries(servers, sequence, allel, len);
+        try {
             createCsvFile(results, ";", outputStream);
             succeeded = true;
-                    }
-                    catch(Exception e) {
-                       logger.error(e);
-                       
-                       error = e;
-                       
-                    }
-                    finally {
-                        if(observer != null) observer.setFinished();
-                        finished = true;
-                    }
-            
-        }	
-	
-	private Map<EntryKey, ResultEntry> createAndExecuteQueries(String[] servers, String sequence, String allel, String length) {
-		if (servers.length == 0 || StringUtils.isEmpty(sequence) || StringUtils.isEmpty(allel) || StringUtils.isEmpty(length)) {
-			return null;
-		}
-		
-		List<AbstractQuery> queries = getQueriesforServers(servers, sequence, allel, length);
-		
-	
-		ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-		CompletionService<Set<TemporaryEntry>> completionService = new ExecutorCompletionService<Set<TemporaryEntry>>(
-				executor);
-                
-		Map<EntryKey, ResultEntry> results = new HashMap<EntryKey, ResultEntry>();
-                totalQueries = queries.size();
-                
-		try {
-			
-			for (AbstractQuery query : queries) {
-				
-                                completionService.submit(query);
-                                
-			}
-			
-			for (int i = 0; i < queries.size(); i++) {
-				Future<Set<TemporaryEntry>> future = completionService.take();
-				Set<TemporaryEntry> res = future.get();
-                                
-                                incrementProgress();
-				for (TemporaryEntry temp : res) {
-					ResultEntry value = results.get(temp.getKey());
-					if (value == null) {
-						// entry not yet in results map, let us create a new one.
-						value = new ResultEntry(temp.getAllel(), temp.getSequence(), temp.getPosition());
-						results.put(temp.getKey(), value);
-					}
-					value.setScore(temp.getAlgorithm(), temp.getScore());
-				}
-			}
-                        executor.shutdown();
-                        executor.awaitTermination(10, TimeUnit.MINUTES);
-                         
-		} catch (InterruptedException e) {
-                       e.printStackTrace();
-                       error = e;
-			//logger.error("Exception happened: ", e);
-		} catch (ExecutionException e) {
-                    e.printStackTrace();
-                    error = e;
-			//logger.error("Exception happened: ", e);
-		}
-		
-		
-		return results;
+        } catch (Exception e) {
+            logger.error(e);
 
-	}
-	
-	
-	private List<AbstractQuery> getQueriesforServers(String[] servers, String sequence, String allel, String length) {
-		List<AbstractQuery> queries = new ArrayList<AbstractQuery>();
-		
-		String[] lengths = length.split(",");
-		
-		QueryFactory factory = new QueryFactory();
-		for (String server : servers) {
-			for (String aLength : lengths) {
-				AbstractQuery query = factory.createQueryForServer(server, sequence, allel, Integer.parseInt(aLength));
-				if (query != null) {
-    					queries.add(query);
-				} else {
-					logger.error("Query was null for server "+server+" and length "+length);
-				}
-			}
-		}
-		return queries;
-	}
-	
-	
-	private void createCsvFile(Map<EntryKey, ResultEntry> results, String delimiter, OutputStream out) throws IOException {
-		List<EntryKey> aSortedEntryList = Util.asSortedList(results.keySet());
-	    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
-	    // first headers
-	    writer.append("Position Start");
-	    writer.append(delimiter);
-	    writer.append("Region");
-	    writer.append(delimiter);
-	    writer.append("Length");
-	    writer.append(delimiter);
-	    writer.append("Sequence");
-	    writer.append(delimiter);
-	    for (Algorithm algo : Algorithm.values()) {
-	    	writer.append(algo.toString());
-	    	writer.append(delimiter);
-	    }
-	    writer.newLine();
-	        
-	    for (EntryKey anEntry : aSortedEntryList) {
-	    	writer.append(String.valueOf(anEntry.getPosition())); // Position Start
-	    	writer.append(delimiter);
-	    	writer.append("\"" + String.valueOf(anEntry.getPosition()) + " - " + String.valueOf(anEntry.getPosition() + anEntry.getLength() - 1) + "\""); // Region
-	    	writer.append(delimiter);
-	    	writer.append(String.valueOf(anEntry.getLength())); // Length
-	    	writer.append(delimiter);
-	    	writer.append(anEntry.getSequence()); // Sequenz
-	    	writer.append(delimiter);
+            error = e;
 
-	    	ResultEntry aResult = results.get(anEntry);
-	        for (Algorithm algo : Algorithm.values()) {
-	        	Double score = aResult.getScore(algo);
-	        	String field = "N/A";
-	        	if (score != null) {
-	        		field = escapeForCSV(aResult.getScore(algo).toString(), delimiter);
-	        	}
-	            writer.append(field);
-	            writer.append(delimiter);
-	        }
-	        writer.newLine();
-	    }
-	    
-	    writer.flush();
-	}
-	
-	private String escapeForCSV(String theString, String delimiter) {
+        } finally {
+            if (observer != null) {
+                observer.setFinished();
+            }
+            finished = true;
+        }
+
+    }
+
+    public void setAdaptiveColumn(boolean adaptiveColumn) {
+        this.adaptiveColumn = adaptiveColumn;
+    }
+
+    public boolean isAdaptiveColumn() {
+        return adaptiveColumn;
+    }
+
+    public List<ResultColumn> getColumnList() {
+
+        if (!isAdaptiveColumn()) {
+
+            return Arrays.asList(ResultColumns.ALL);
+
+        } else {
+             List<ResultColumn> columnList = new ArrayList();
+             for(ResultColumn column : ResultColumns.ALL) {
+                 
+                 if(column.isAlgorithmInList(servers)) {
+                     columnList.add(column);
+                 }
+             }
+             return columnList;
+        }
+    }
+
+    private Map<EntryKey, ResultEntry> createAndExecuteQueries(String[] servers, String sequence, String allel, String length) {
+        if (servers.length == 0 || StringUtils.isEmpty(sequence) || StringUtils.isEmpty(allel) || StringUtils.isEmpty(length)) {
+            return null;
+        }
+
+        List<AbstractQuery> queries = getQueriesforServers(servers, sequence, allel, length);
+
+        ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+        CompletionService<Set<TemporaryEntry>> completionService = new ExecutorCompletionService<Set<TemporaryEntry>>(
+                executor);
+
+        Map<EntryKey, ResultEntry> results = new HashMap<EntryKey, ResultEntry>();
+        totalQueries = queries.size();
+
+        try {
+
+            for (AbstractQuery query : queries) {
+
+                completionService.submit(query);
+
+            }
+
+            for (int i = 0; i < queries.size(); i++) {
+                Future<Set<TemporaryEntry>> future = completionService.take();
+                Set<TemporaryEntry> res = future.get();
+
+                incrementProgress();
+                for (TemporaryEntry temp : res) {
+                    ResultEntry value = results.get(temp.getKey());
+                    if (value == null) {
+                        // entry not yet in results map, let us create a new one.
+                        value = new ResultEntry(temp.getAllel(), temp.getSequence(), temp.getPosition());
+                        results.put(temp.getKey(), value);
+                    }
+                    value.setScore(temp.getColumn(), temp.getScore());
+                }
+            }
+            executor.shutdown();
+            executor.awaitTermination(10, TimeUnit.MINUTES);
+
+        } catch (InterruptedException e) {
+            ///e.printStackTrace();
+            error = e;
+            logger.error("Exception happened: ", e);
+        } catch (ExecutionException e) {
+            //e.printStackTrace();
+            error = e;
+            logger.error("Exception happened: ", e);
+        }
+
+        return results;
+
+    }
+
+    private List<AbstractQuery> getQueriesforServers(String[] servers, String sequence, String allel, String length) {
+        List<AbstractQuery> queries = new ArrayList<AbstractQuery>();
+
+        String[] lengths = length.split(",");
+
+        QueryFactory factory = new QueryFactory();
+        for (String server : servers) {
+            for (String aLength : lengths) {
+                AbstractQuery query = factory.createQueryForServer(server, sequence, allel, Integer.parseInt(aLength));
+                if (query != null) {
+                    queries.add(query);
+                } else {
+                    logger.error("Query was null for server " + server + " and length " + length);
+                }
+            }
+        }
+        return queries;
+    }
+
+    private void createCsvFile(Map<EntryKey, ResultEntry> results, String delimiter, OutputStream out) throws IOException {
+        List<EntryKey> aSortedEntryList = Util.asSortedList(results.keySet());
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
+        // first headers
+        writer.append("Position Start");
+        writer.append(delimiter);
+        writer.append("Region");
+        writer.append(delimiter);
+        writer.append("Length");
+        writer.append(delimiter);
+        writer.append("Sequence");
+        writer.append(delimiter);
+        for (ResultColumn column : getColumnList()) {
+            writer.append(column.toString());
+            writer.append(delimiter);
+        }
+        writer.newLine();
+
+        for (EntryKey anEntry : aSortedEntryList) {
+            writer.append(String.valueOf(anEntry.getPosition())); // Position Start
+            writer.append(delimiter);
+            writer.append("\"" + String.valueOf(anEntry.getPosition()) + " - " + String.valueOf(anEntry.getPosition() + anEntry.getLength() - 1) + "\""); // Region
+            writer.append(delimiter);
+            writer.append(String.valueOf(anEntry.getLength())); // Length
+            writer.append(delimiter);
+            writer.append(anEntry.getSequence()); // Sequenz
+            writer.append(delimiter);
+
+            ResultEntry aResult = results.get(anEntry);
+            for (ResultColumn column : getColumnList()) {
+                Double score = aResult.getScore(column);
+                String field = "N/A";
+                if (score != null) {
+                    field = escapeForCSV(aResult.getScore(column).toString(), delimiter);
+                }
+                writer.append(field);
+                writer.append(delimiter);
+            }
+            writer.newLine();
+        }
+
+        writer.flush();
+    }
+
+    private String escapeForCSV(String theString, String delimiter) {
         String field = theString.replace("\"", "\"\"");
         if (field.indexOf(delimiter) > -1 || field.indexOf('"') > -1) {
             field = '"' + field + '"';
         }
         return field;
-	}
+    }
 
     @Override
     public void setId(String id) {
@@ -292,20 +316,22 @@ public class QueryJob implements Job {
 
     private void incrementProgress() {
         progress++;
-        if(observer != null) observer.notifyProgress();
+        if (observer != null) {
+            observer.notifyProgress();
+        }
     }
-    
+
     @Override
     public int getProgress() {
         return progress;
     }
-    
+
     public int getTotal() {
         return totalQueries;
     }
-    
+
     public void clean() {
-        
+
     }
 
     public Throwable getError() {
@@ -319,7 +345,5 @@ public class QueryJob implements Job {
     public String getFileName() {
         return fileName;
     }
-    
-    
-    
+
 }
