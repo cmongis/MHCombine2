@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 import backend.serverqueries.AbstractQuery;
 import backend.serverqueries.IedbConsensusQuery;
 import backend.serverqueries.IedbNetMHCconsQuery;
-import backend.serverqueries.IedbPickPocketQuery;
+import backend.serverqueries.IedbPickpocketQuery;
 import backend.serverqueries.IedbRecommendedQuery;
 import backend.serverqueries.IedbSmmQuery;
 import backend.serverqueries.IedbSmmpmbecQuery;
@@ -34,54 +34,39 @@ import backend.serverqueries.NetMHCPan30Query;
 import backend.serverqueries.NetMHCPan40Query;
 import backend.serverqueries.NetMHCPan41Query;
 import backend.serverqueries.NetMHC40Query;
+import backend.serverqueries.QueryInputType;
 import backend.serverqueries.SyfpeithiQuery;
+import java.util.ArrayList;
+import java.util.List;
 
 public class QueryFactory {
 
-    private final Logger logger = LogManager.getLogger(QueryFactory.class);
+    public static final Logger LOGGER = LogManager.getLogger(QueryFactory.class);
 
+    List<QueryFactoryInterface> factories = new ArrayList<>();
+    
     public QueryFactory() {
-
+        factories.add(new GenericQueryFactory());
+        factories.add(new IedbQueryFactory());
     }
-
-    public AbstractQuery createQueryForServer(String server, String sequence, String allel, Integer length) {
-        switch (server) {
-            case "NetMHC40":
-                return new NetMHC40Query(sequence, allel, length);
-            case "NetMHC34":
-                return new NetMHC34Query(sequence, allel, length);
-            case "NetMHCpan40":
-                return new NetMHCPan40Query(sequence, allel, length);
-            case "NetMHCpan41":
-                return new NetMHCPan41Query(sequence, allel, length);
-            case "NetMHCpan30":
-                return new NetMHCPan30Query(sequence, allel, length);
-
-            case "NetMHCpan28":
-                return new NetMHCpan28Query(sequence, allel, length);
-
-            case "IEDBNetMHCcons":
-                return new IedbNetMHCconsQuery(sequence, allel, length);
-            case "IEDBPickPocket":
-                return new IedbPickPocketQuery(sequence, allel, length);
-            case "IedbRecommended":
-                return new IedbRecommendedQuery(sequence, allel, length);
-            case "IedbConsensus":
-                return new IedbConsensusQuery(sequence, allel, length);
-            case "IedbSmmpmbec":
-                return new IedbSmmpmbecQuery(sequence, allel, length);
-            case "IedbSmm":
-                return new IedbSmmQuery(sequence, allel, length);
-            case "SYFPEITHI":
-                return new SyfpeithiQuery(sequence, allel, length);
-            // Deprecate BIMAS
-//		case "BIMAS":
-//			return new BimasQuery(sequence, allel, length);
-            default:
-                logger.warn("Attempted to create query for server " + server + ", no query type found! Returning null.");
+    
+    //TODO: Transform this factory to return a list of queries
+   // public List<AbstractQuery> createQueryForServer(String server, String input, String allel, Integer length) {
+   //     return createQueryForServer(server,input,allel,length,QueryInputType.SEQUENCE);
+   // }
+    public List<AbstractQuery> createQueryForServer(String server, String sequence, String allel, Integer length,QueryInputType inputType) {
+        
+        List<AbstractQuery> queries = new ArrayList<>(10);
+        
+        for(QueryFactoryInterface factory : factories) {
+            if(factory.support(server)) {
+                queries.addAll(factory.createQueryForServer(server, sequence, allel, length, inputType));
                 break;
+            }
         }
-        return null;
+        queries.forEach(query->query.setQueryInputType(inputType));
+        return queries;
+       
     }
 
 }
