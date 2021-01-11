@@ -23,7 +23,6 @@ import java.util.concurrent.Callable;
 
 import backend.entries.TemporaryEntry;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -31,6 +30,8 @@ public abstract class AbstractQuery implements Callable<Set<TemporaryEntry>> {
 
     private final Logger logger = Logger.getLogger(this.getClass().getSimpleName());
 
+    private QueryInputType queryInputType = QueryInputType.SEQUENCE;
+    
     public static final List<TemporaryEntry> NO_ENTRY = Arrays.asList();
 
     @Override
@@ -42,8 +43,28 @@ public abstract class AbstractQuery implements Callable<Set<TemporaryEntry>> {
         return queryServer;
     }
 
+    public void setQueryInputType(QueryInputType queryInputType) {
+        this.queryInputType = queryInputType;
+    }
+
+    public QueryInputType getQueryInputType() {
+        return queryInputType;
+    }
+    
+    public void setQueryInputType(String queryInputType) {
+        if(queryInputType == null) {
+            throw new IllegalArgumentException("Null query input type");
+        }
+        setQueryInputType(QueryInputType.valueOf(queryInputType.toUpperCase()));
+    }
+
     protected abstract Set<TemporaryEntry> queryServer();
 
     protected abstract List<TemporaryEntry> processLine(String line);
+    
+    
+    protected boolean isPeptideQuery() {
+        return queryInputType == QueryInputType.PEPTIDE;
+    }
 
 }
