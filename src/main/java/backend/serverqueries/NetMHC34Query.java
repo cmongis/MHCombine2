@@ -19,14 +19,11 @@
 package backend.serverqueries;
 
 import backend.entries.TemporaryEntry;
-import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import backend.entries.Algorithm;
-import backend.entries.ResultColumn;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
 
 /**
  *

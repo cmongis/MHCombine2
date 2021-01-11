@@ -20,15 +20,14 @@ package backend.serverqueries;
 
 //import org.apache.logging.log4j.LogManager;
 //import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import backend.entries.Algorithm;
+import backend.entries.ResultColumnSuffix;
 import backend.entries.TemporaryEntry;
 import java.util.Arrays;
 import java.util.List;
 
-public class NetMHCPan30Query extends NetMHC40Query {
+public class NetMHCPan30Query extends AbstractNetMhcQuery {
 
    
     public NetMHCPan30Query(String sequence, String allel, Integer length) {
@@ -39,41 +38,41 @@ public class NetMHCPan30Query extends NetMHC40Query {
         );
 
     }
+    
+    
+    @Override
+    protected List<TemporaryEntry> processLine(String line) {
+   
+        String allel = null;
+        String sequence = null;
+        Integer position = null;
+        Double score = null;
+        Double rank = null;
+       
+
+        String aLineToWork = line.trim().replaceAll("\\s+", " ");
+        String[] aSplitLine = aLineToWork.split(" ");
+        
+
+        // Allel of NetMHC is "HLA-A0101", but everyone else gives "HLA-A*01:01" -> return original allel
+        allel = this.allel;
+
+        // add offset to cope with NetMHC being 0-indexed
+        position = Integer.parseInt(aSplitLine[0]);
+
+        sequence = aSplitLine[2];
+        score = Double.parseDouble(aSplitLine[12]);
+        rank = Double.parseDouble((aSplitLine[13]));
+        // take Affinity[nM] 
+        TemporaryEntry affinityEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(), score);
+        TemporaryEntry rankEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(ResultColumnSuffix.RANK), rank);
+        
+        return Arrays.asList(rankEntry,affinityEntry);
+    }
 
     @Override
     public String processAllel(String allel) {
         return allel.replace("*", "");
     }
-    /*
-    protected List<TemporaryEntry> processLine(String line) {
-        // Line contains (space separated)
-        // "  Pos          HLA         Peptide       Core Of Gp Gl Ip Il        Icore        Identity   Score Aff(nM)   %Rank  BindLevel"
-        //     1  HLA-A*01:01        SYFPEITH  -SYFPEITH  0  0  0  0  1     SYFPEITH        Sequence 0.02170 39535.2   60.00
-
-        String allel = null;
-        String sequence = null;
-        Integer position = null;
-        Double score = null;
-
-        String aLineToWork = line.trim().replaceAll("\\s+", " ");
-        String[] aSplitLine = aLineToWork.split(" ");
-        if (aSplitLine.length < 14) {
-
-            logger().warn("not enough input! " + aLineToWork);
-            return Arrays.asList();
-        } else if (aSplitLine.length > 16) {
-            // Strong and weak binders have last entry "<= WB", which gives two fields in the array!
-            logger().warn("too much input! " + aLineToWork);
-            return Arrays.asList();
-        }
-
-        // allel is returned "HLA-A*01:01" here, even though as input one had to provide "HLA-A01:01".
-        allel = this.allel; //aSplitLine[1];
-        sequence = aSplitLine[2];
-        position = Integer.parseInt(aSplitLine[0]);
-        score = Double.parseDouble(aSplitLine[12]); // take Aff[nM] 
-        TemporaryEntry temporaryEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(), score);
-        return Arrays.asList(temporaryEntry);
-    }*/
-
+    
 }

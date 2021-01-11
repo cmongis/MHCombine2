@@ -41,11 +41,7 @@ public class NetMHC40Query extends AbstractNetMhcQuery {
        super(algorithm, configFile, sequence, allel, length);
    }
    
-   /*
-    public String processAllel(String allel) {
-        return allel.replace("*", "");
-    }*/
-
+ 
     @Override
     protected List<TemporaryEntry> processLine(String line) {
         /* Line contains (space separated)

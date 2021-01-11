@@ -37,6 +37,10 @@ public class NetMHCPan40Query extends AbstractNetMhcQuery {
         
     }
     
+    public NetMHCPan40Query(Algorithm algorithm, String configFile,String sequence, String allel, Integer length) {
+       super(algorithm, configFile, sequence, allel, length);
+   }
+    
     public String processAllel(String allel) {
         return allel.replace("*", "");
     }
@@ -47,19 +51,19 @@ public class NetMHCPan40Query extends AbstractNetMhcQuery {
         // "  Pos          HLA         Peptide       Core Of Gp Gl Ip Il        Icore        Identity   Score Aff(nM)   %Rank  BindLevel"
         //     1  HLA-A*01:01        SYFPEITH  -SYFPEITH  0  0  0  0  1     SYFPEITH        Sequence 0.02170 39535.2   60.00
 
-        String allel = null;
-        String sequence = null;
-        Integer position = null;
-        Double score = null;
-        Double rank = null;
+        String allel;
+        String sequence;
+        Integer position;
+        Double score;
+        Double rank;
         String aLineToWork = line.trim().replaceAll("\\s+", " ");
         String[] aSplitLine = aLineToWork.split(" ");
         
         allel = this.allel; 
         sequence = aSplitLine[2];
         position = Integer.parseInt(aSplitLine[0]);
-        score = Double.parseDouble(aSplitLine[11]); // take Aff[nM]
-        rank = Double.parseDouble(aSplitLine[12]);
+        score = Double.parseDouble(aSplitLine[12]); // take Aff[nM]
+        rank = Double.parseDouble(aSplitLine[13]);
         TemporaryEntry scoreEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(), score);
         TemporaryEntry rankEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(ResultColumnSuffix.RANK), rank);
         //TemporaryEntry rankBaEntry = new TemporaryEntry(allel, sequence, position, getAlgorithm().toColumn(ResultColumn.RANK_EL), rankBa);
