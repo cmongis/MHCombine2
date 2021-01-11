@@ -36,9 +36,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.lang3.ArrayUtils;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -59,52 +61,132 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
     protected final String allel;
     protected final Integer length;
 
-
-    final Algorithm algoritm;
+    private final Algorithm algoritm;
 
     private final Logger logger = Logger.getLogger(this.getClass().getSimpleName());
 
     private final String formDataField;
 
-    
-   private final Set<TemporaryEntry> results = new HashSet<>();
+    private final int TRIAL_LIMIT = 5;
+    private final long RETRY_INTERVAL = 300;
 
+    private final IsEmptyStringPredicate isEmptyPredicate = new IsEmptyStringPredicate();
+
+    private final Set<TemporaryEntry> results = new HashSet<>();
+
+    private Set<Peptide> peptides;
     
     
+    private final static int PEPTIDE_LENGTH_MIN = 8;
+    private final static int PEPTIDE_LENGTH_MAX = 14;
+
     public AbstractIedbQuery(Algorithm algorithm, String formDataField, String sequence, String allel, Integer length) {
         this.sequence = sequence;
         this.allel = allel;
         this.length = length;
         this.algoritm = algorithm;
         this.formDataField = formDataField;
+
     }
+    
+    
+    
+    
+    protected Set<Integer> findAllDifferentPeptideLengths(){
+        return getPeptides()
+                .stream()
+                .mapToInt(Peptide::getLength)
+                .distinct()
+                .filter(i->i >=PEPTIDE_LENGTH_MIN && i <= PEPTIDE_LENGTH_MAX)
+                .mapToObj(Integer::new)
+                .collect(Collectors.toSet());
+    }
+    
+    
 
     protected HttpEntity getFormData(String method) {
+
         List<NameValuePair> formdata = new ArrayList<NameValuePair>();
         formdata.add(new BasicNameValuePair(methodName, method));
+        
+
+        String lengthStr = length.toString();
+        
+        String allelStr;
+        
+        String sequence;
+        
+
+        // in a peptide query, only one allel at the time should be checked.
+        if(isPeptideQuery()) {
+            
+            Set<Peptide> peptides = getPeptides();
+            Set<Integer> peptideLengths = findAllDifferentPeptideLengths();
+            
+            sequence = peptides.stream().map(Peptide::getSequence).collect(Collectors.joining("\n"));
+            allelStr = peptideLengths.stream().map(peptide->allel).collect(Collectors.joining(","));
+            lengthStr = peptideLengths.stream().map(length->length.toString()).collect(Collectors.joining(","));
+            
+        }
+        
+        // in a sequence query, multiple alleles can be checked at the same time. it's okay
+        else {
+            
+            sequence = this.sequence;
+            allelStr = allel;
+            lengthStr = Stream.of(allel.split(","))
+                    .map(el->length.toString())
+                    .collect(Collectors.joining(","));  
+        }
+        
         formdata.add(new BasicNameValuePair(sequenceName, sequence));
-        formdata.add(new BasicNameValuePair(alleleName, allel));
-        formdata.add(new BasicNameValuePair(lengthName, length.toString()));
+        formdata.add(new BasicNameValuePair(alleleName, allelStr));
+        formdata.add(new BasicNameValuePair(lengthName, lengthStr));
         UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formdata, Consts.UTF_8);
         return entity;
+    }
+
+    private boolean isEmpty(String str) {
+        return str != null && "".equals(str.trim()) == false;
+    }
+
+    public Set<Peptide> getPeptides() {
+        if (peptides == null) {
+            peptides = new HashSet<>();
+
+            Stream.of(sequence.split("\\n"))
+                    .map(Peptide::new)
+                    .forEach(peptides::add);
+        }
+        return peptides;
     }
 
     public Set<TemporaryEntry> queryServer() {
 
         CloseableHttpClient client = HttpClients.createSystem();
 
+      
+
         HttpPost postRequest = new HttpPost(url);
         HttpEntity entity = getFormData(getFormDataField());
-
         postRequest.setEntity(entity);
-       
+
         CloseableHttpResponse response = null;
+
         try {
-            
+
             logger.info(String.format("POST: %s | %s", url, getFormDataField()));
             logger.info(entity.toString());
             response = client.execute(postRequest);
-            
+
+            for (int retry = 0; retry != TRIAL_LIMIT; retry++) {
+                if (response.getStatusLine().getStatusCode() == 403) {
+                    logger.warning("Retrying query for " + getAlgorithm().name());
+                    response = client.execute(postRequest);
+                    Thread.sleep(RETRY_INTERVAL);
+                }
+            }
+
             BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             String line = null;
             boolean processing = false;
@@ -113,10 +195,31 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
                 if (line == null) {
                     break;
                 }
+                System.out.println(line);
+
+                System.out.println(new StringBuilder()
+                        .append("[")
+                        .append(getAlgorithm().name())
+                        .append("] ")
+                        .append(line)
+                        .toString()
+                );
+
                 if (processing) {
                     try {
-                        for(TemporaryEntry entry : processLine(line)) {
-                            results.add(entry);
+                        for (TemporaryEntry entry : processLine(line)) {
+                            
+                            // if it's peptide query, we only wants the peptides previously entered
+                            if(isPeptideQuery()) {
+                                Peptide peptide = new Peptide((entry.getSequence()));
+                                if (peptides.contains(peptide)) {
+                                    results.add(entry);
+                                }
+                            }
+                            // otherwise, we want everything
+                            else {
+                                results.add(entry);
+                            }
                         }
                         //processLine(line, getAlgorithm());
                     } catch (Exception e) {
@@ -132,6 +235,10 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
             EntityUtils.consume(response.getEntity());
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Exception happened while executing POST request. Abort.", e);
+
+        } catch (InterruptedException ie) {
+            logger.log(Level.SEVERE, "Exception happened while executing POST request. Abort.", ie);
+
         } finally {
             if (response != null) {
                 try {
@@ -167,8 +274,17 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
         // Line:
         // allele, seq_num, start, end, length, peptide, score, [other stuff]
         TemporaryEntry entry = new TemporaryEntry(allel, entries[5], Integer.parseInt(entries[2]), getAlgorithm().toColumn(), Double.parseDouble(entries[6]));
-        
+
         return Arrays.asList(entry);
-        
+
     }
+
+    private class IsEmptyStringPredicate implements Predicate<String> {
+
+        @Override
+        public boolean test(String t) {
+            return t != null && "".equals(t.trim()) == false;
+        }
+    }
+
 }
