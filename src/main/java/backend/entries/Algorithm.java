@@ -18,7 +18,7 @@ public enum Algorithm {
     NetMHC34("NetMHC 3.4"),
     IedbNetMHCcons("NetMHCcons 1.1"), //IEDB_ann("NetMHC 3.4 = IEDB ann"),
     IedbPickpocket("Pickpocket 1.1"),
-    IedbRecommended("IEDB Recommended"),
+    IedbRecommended("IEDB Recommended",ResultColumnSuffix.RANK),
     IedbConsensus("IEDB Consensus", ResultColumnSuffix.RANK),
     IedbSmmpmbec(" IEDB SMMPMBEC"),
     IedbSmm("IEDB SMM"),
@@ -46,7 +46,7 @@ public enum Algorithm {
     public String toString() {
         return this.printName;
     }
-
+    
     public ResultColumn toColumn() {
         return new ResultColumn(this, defaultSuffix);
     }

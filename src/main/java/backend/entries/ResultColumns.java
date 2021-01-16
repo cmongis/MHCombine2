@@ -1,4 +1,4 @@
-/*
+ /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -44,7 +44,7 @@ public class ResultColumns {
     
     public static final ResultColumn[] ALL = {
         Algorithm.NetMHCpan41.toColumn(ResultColumnSuffix.RANK_EL),
-        //Algorithm.NetMHCpan41.toColumn(ResultColumn.RANK_BA),
+        Algorithm.NetMHCpan41.toColumn(ResultColumnSuffix.RANK_BA),
         Algorithm.NetMHCpan41.toColumn(),
         
         Algorithm.NetMHC40.toColumn(ResultColumnSuffix.RANK),
