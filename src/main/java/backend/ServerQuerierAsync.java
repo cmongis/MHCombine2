@@ -18,17 +18,18 @@
  */
 package backend;
 
+import backend.serverqueries.QueryInputType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.entity.ContentType;
+import utils.Util;
 
 /**
  *
@@ -44,7 +45,7 @@ public class ServerQuerierAsync extends AsyncServlet {
          mapper = new ObjectMapper();
     }
     
- 
+    private static final String ADAPTIVE_COLUMNS = "adaptiveColumns";
     
     
     protected void doGet(HttpServletRequest request,
@@ -57,6 +58,7 @@ public class ServerQuerierAsync extends AsyncServlet {
            if(job == null) {
                response.setStatus(404);
            }
+           
            else {
                response.getWriter().write(mapper.writeValueAsString(new JobStatus(job)));
            }
@@ -72,12 +74,19 @@ public class ServerQuerierAsync extends AsyncServlet {
         PrintWriter out = response.getWriter();
         String sequence = request.getParameter("seqsub");
         String species = request.getParameter("species");
-        String allelParam = "allele" + species;
-        String allel = request.getParameter(allelParam).trim();
+        String allel = request.getParameter("alleleList");
         String[] servers = request.getParameterValues("server");
         String len = request.getParameter("length");
         String filenameProtId = request.getParameter("file_name");
+        String adaptiveColumns = request.getParameter(ADAPTIVE_COLUMNS);
+        QueryInputType queryInputType = Util.queryInputTypeFromString(request.getParameter("queryInputType"));
 
+        
+
+        if("on".equals(adaptiveColumns)) {
+            adaptiveColumns = "true";
+        }
+        
         if (StringUtils.isEmpty(sequence)
                 || StringUtils.isEmpty(allel)
                 || StringUtils.isEmpty(len)) {
@@ -86,6 +95,10 @@ public class ServerQuerierAsync extends AsyncServlet {
             out.close();
             return;
         }
+        
+        
+
+        
         if (servers == null || servers.length == 0) {
 
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -102,7 +115,8 @@ public class ServerQuerierAsync extends AsyncServlet {
         Job job = getJobManager()
                 .createJob();
         
-        job.configure(sequence, allel, len, servers);
+        job.configure(queryInputType,sequence, allel, len, servers);
+        job.setConfig("adaptiveColumns",adaptiveColumns);
         job.setFileName(filename);
         
         getJobManager()

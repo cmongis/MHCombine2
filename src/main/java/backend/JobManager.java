@@ -34,7 +34,6 @@ public class JobManager {
 
     private ExecutorService executor = Executors.newFixedThreadPool(10);
     
-    
     private static final Logger logger = LogManager.getLogger(JobManager.class);
     
     

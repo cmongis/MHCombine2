@@ -5,7 +5,6 @@
  */
 package backend;
 
-import utils.Constants;
 
 /*
  * This file is part of MHCcombine.
@@ -29,7 +28,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,11 +50,10 @@ import backend.entries.ResultEntry;
 import backend.entries.TemporaryEntry;
 import backend.serverqueries.AbstractQuery;
 import java.util.concurrent.TimeUnit;
-import backend.entries.Algorithm;
 import backend.entries.ResultColumn;
 import backend.entries.ResultColumns;
+import backend.serverqueries.QueryInputType;
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 /**
  * Servlet implementation class ServerQuerier
@@ -95,15 +92,26 @@ public class QueryJob implements Job {
 
     private String fileName;
 
-    private long creation = System.currentTimeMillis();
+    private QueryInputType queryInputType = QueryInputType.SEQUENCE;
+    
+    private final long creation = System.currentTimeMillis();
+    private final long START_QUERY_INTERVAL = 250; //milliseconds
+    private boolean adaptiveColumn = false;
+    private final String ADAPTIVE_COLUMNS = "adaptiveColumns";
 
-    private boolean adaptiveColumn = true;
-
-    public void configure(String sequence, String allel, String len, String... servers) {
+    public void configure(QueryInputType queryInputType, String sequence, String allel, String len, String... servers) {
+        this.queryInputType = queryInputType;
         this.sequence = sequence;
         this.allel = allel;
         this.len = len;
         this.servers = servers;
+    }
+
+    @Override
+    public void setConfig(String key, Object value) {
+        if(ADAPTIVE_COLUMNS.equals(key) && value != null) {
+            setAdaptiveColumn("true".equals(value));
+        } 
     }
 
     @Override
@@ -113,6 +121,9 @@ public class QueryJob implements Job {
         Map<EntryKey, ResultEntry> results = createAndExecuteQueries(servers, sequence, allel, len);
         try {
             createCsvFile(results, ";", outputStream);
+            outputStream.close();
+            
+            
             succeeded = true;
         } catch (Exception e) {
             logger.error(e);
@@ -127,6 +138,8 @@ public class QueryJob implements Job {
         }
 
     }
+    
+    
 
     public void setAdaptiveColumn(boolean adaptiveColumn) {
         this.adaptiveColumn = adaptiveColumn;
@@ -134,6 +147,14 @@ public class QueryJob implements Job {
 
     public boolean isAdaptiveColumn() {
         return adaptiveColumn;
+    }
+    
+    public boolean isMultiAllels() {
+        return allel.contains(",");
+    }
+    
+    public boolean isPeptideQuery() {
+        return queryInputType == QueryInputType.PEPTIDE;
     }
 
     public List<ResultColumn> getColumnList() {
@@ -171,7 +192,7 @@ public class QueryJob implements Job {
         try {
 
             for (AbstractQuery query : queries) {
-
+                Thread.sleep(START_QUERY_INTERVAL);
                 completionService.submit(query);
 
             }
@@ -179,6 +200,10 @@ public class QueryJob implements Job {
             for (int i = 0; i < queries.size(); i++) {
                 Future<Set<TemporaryEntry>> future = completionService.take();
                 Set<TemporaryEntry> res = future.get();
+                
+                if(res == null) {
+                    throw new RuntimeException("Error when querying server");
+                }
 
                 incrementProgress();
                 for (TemporaryEntry temp : res) {
@@ -216,11 +241,11 @@ public class QueryJob implements Job {
         QueryFactory factory = new QueryFactory();
         for (String server : servers) {
             for (String aLength : lengths) {
-                AbstractQuery query = factory.createQueryForServer(server, sequence, allel, Integer.parseInt(aLength));
-                if (query != null) {
-                    queries.add(query);
+                List<AbstractQuery> newQueries = factory.createQueryForServer(server, sequence, allel, Integer.parseInt(aLength),queryInputType);
+                if (newQueries.size() > 0) {
+                    queries.addAll(newQueries);
                 } else {
-                    logger.error("Query was null for server " + server + " and length " + length);
+                    logger.error("Query was NULL for server " + server + " and length " + length);
                 }
             }
         }
@@ -231,14 +256,27 @@ public class QueryJob implements Job {
         List<EntryKey> aSortedEntryList = Util.asSortedList(results.keySet());
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
         // first headers
-        writer.append("Position Start");
-        writer.append(delimiter);
-        writer.append("Region");
-        writer.append(delimiter);
-        writer.append("Length");
-        writer.append(delimiter);
+        
+        
+        if(!isPeptideQuery()) {
+            writer.append("Position Start");
+            writer.append(delimiter);
+            writer.append("Region");
+            writer.append(delimiter);
+            writer.append("Length");
+            writer.append(delimiter);
+        }
+        if(isMultiAllels()) {
+            writer.append("Allel");
+            writer.append(delimiter);
+                    
+        }
         writer.append("Sequence");
         writer.append(delimiter);
+        
+        
+        
+        
         for (ResultColumn column : getColumnList()) {
             writer.append(column.toString());
             writer.append(delimiter);
@@ -246,12 +284,18 @@ public class QueryJob implements Job {
         writer.newLine();
 
         for (EntryKey anEntry : aSortedEntryList) {
-            writer.append(String.valueOf(anEntry.getPosition())); // Position Start
-            writer.append(delimiter);
-            writer.append("\"" + String.valueOf(anEntry.getPosition()) + " - " + String.valueOf(anEntry.getPosition() + anEntry.getLength() - 1) + "\""); // Region
-            writer.append(delimiter);
-            writer.append(String.valueOf(anEntry.getLength())); // Length
-            writer.append(delimiter);
+            if(!isPeptideQuery()) {
+                writer.append(String.valueOf(anEntry.getPosition())); // Position Start
+                writer.append(delimiter);
+                writer.append("\"" + String.valueOf(anEntry.getPosition()) + " - " + String.valueOf(anEntry.getPosition() + anEntry.getLength() - 1) + "\""); // Region
+                writer.append(delimiter);
+                writer.append(String.valueOf(anEntry.getLength())); // Length
+                writer.append(delimiter);
+            }
+            if(isMultiAllels()) {
+                writer.append(anEntry.getAllel());
+                writer.append(delimiter);
+            }
             writer.append(anEntry.getSequence()); // Sequenz
             writer.append(delimiter);
 
@@ -269,6 +313,7 @@ public class QueryJob implements Job {
         }
 
         writer.flush();
+        writer.close();
     }
 
     private String escapeForCSV(String theString, String delimiter) {

@@ -5,8 +5,8 @@
  */
 package backend;
 
+import backend.serverqueries.QueryInputType;
 import java.io.OutputStream;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -20,7 +20,10 @@ public interface Job extends Runnable {
     public String getId();
     public void setObserver(QueryObserver observer);
     
-    public void configure(String sequence, String allel, String len, String... servers);    
+    
+  
+    public void configure(QueryInputType type, String sequence, String allel, String len, String... servers);    
+    public void setConfig(String key, Object value);
     public void setOutputStream(OutputStream stream);
     
     

@@ -5,6 +5,7 @@
  */
 package backend;
 
+import backend.serverqueries.QueryInputType;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -35,6 +36,12 @@ public class QueryFileJob implements FileJob {
     }
 
     @Override
+    public void setConfig(String string, Object o) {
+        job.setConfig(string, o);
+    }
+
+    
+    @Override
     public void setId(String id) {
         job.setId(id);
     }
@@ -50,8 +57,8 @@ public class QueryFileJob implements FileJob {
     }
 
     @Override
-    public void configure(String sequence, String allel, String len, String... servers) {
-        job.configure(sequence, allel, len, servers);
+    public void configure(QueryInputType inputType, String sequence, String allel, String len, String... servers) {
+        job.configure(inputType,sequence, allel, len, servers);
     }
 
     @Override
