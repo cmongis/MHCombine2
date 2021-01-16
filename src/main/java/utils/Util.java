@@ -18,9 +18,12 @@
  */
 package utils;
 
+import backend.QueryFactory;
+import backend.serverqueries.QueryInputType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.apache.logging.log4j.LogManager;
 
 public class Util {
 	
@@ -30,5 +33,13 @@ public class Util {
 	  java.util.Collections.sort(list);
 	  return list;
 	}
+        
+        
+        public static QueryInputType queryInputTypeFromString(String string) {
+            if(string == null || "".equals(string)) {
+                throw new IllegalArgumentException("QueryInputType should not be NULL nor Empty");
+            }
+            return QueryInputType.valueOf(string.toUpperCase()); 
+        }
 	
 }
