@@ -12,7 +12,7 @@
         <script src="js/vendor/jquery.min.js"></script>
         <!-- Include all compiled plugins (below), or include individual files as needed -->
         <script src="js/vendor/video.js"></script>
-        <script src="js/flat-ui.min.js"></script>
+        <script src="js/flat-ui.min.js" sync></script>
        
         <!-- HTML5 shim, for IE6-8 support of HTML5 elements. All other JS at the end of file. -->
         <!--[if lt IE 9]>
@@ -23,13 +23,22 @@
              .with-padding {
                  margin-left:2em;
              }
+             input[type="checkbox"] {
+                 margin-right:5px;
+                 position:relative;
+                 top:-1px;
+             }
+             .note {
+                 margin-top:5px;
+             }
          </style>
+         
 
 
     </head>
 
     <body>
-
+        
 
         <nav class="navbar navbar-default" role="navigation">
             <div class="container-fluid">
@@ -60,8 +69,12 @@
         <div id=formular class="container">
             <form id="form" action="queryServer" method="POST" enctype="application/x-www-form-urlencoded">
 
-                <b>1) Enter the sequence of your protein of interest in FASTA format:</b><br>
+                <b>1) Enter the sequence of your protein of interest in FASTA format or a list of PEPTIDES separated by a new line:</b><br>
                 (maximum 1000 amino acids)<br>
+                <select id="queryInputType"  data-toggle="select" name="queryInputType">
+                    <option value="sequence" selected>SEQUENCE(S)</option>
+                    <option value="peptide">PEPTIDE(S)</option>
+                </select><br><br>
                 <textarea name="seqsub" rows=8 cols=64 class="form-control"></textarea>
 
                 <br>
@@ -71,17 +84,29 @@
                 <div id="selectMHC" class="container">
 
                     <script>
-                        function showAllele(inp, divname) {
+                        function showAllele(inp, divname,event) {
                             // note that the selectedIdx starts at 0, no matter which value you assign to your select...
                             var alleldiv;
                             var i;
-                            for (i = 0; i < inp.length; i++) {
+                            for (i = 0; i < 4; i++) {
                                 alleldiv = document.getElementById(divname + i);
                                 alleldiv.style.display = 'none';
                             }
-                            alleldiv = document.getElementById(divname + inp.selectedIndex);
+                            alleldiv = document.getElementById(divname + event.target.value);
                             alleldiv.style.display = 'block';
                         }
+                        
+                        
+                        function onAlleleChange(event) {
+                            console.log(event.target.value);
+                            var alleleListInput = document.getElementById("alleleList");
+                            var alleles = alleleListInput.value.split(",").filter(function(str) {
+                                return str != null && str.trim() != "";
+                            });
+                            alleles.push(event.target.value)
+                            alleleListInput.value = alleles.join(",");
+                        }
+
                     </script>
 
                     <!-- <!-- <script> -->
@@ -104,7 +129,8 @@
                     </script>
 
                     <b>2) Select the MHC species/loci of interest:</b><br>
-                    <select data-toggle="select" name="species" size="1" onchange="showAllele(this, 'allele_opts')" class="form-c*ontrol select select-default mrs ">
+                    <select data-toggle="select" name="species" size="1" onchange="showAllele(this, 'allele_opts',event)" class="form-csontrol select select-default mrs ">
+                        <option disabled selected value> -- please select -- </option>
                         <option value="0">HLA supertype representative</option>
                         <option value="1">HLA-A*</option>
                         <option value="2">HLA-B*</option>
@@ -113,9 +139,10 @@
                     <br><br>
 
                     <b>3) Select the MHC type of interest:</b><br>
-                    (Only one MHC type per query)<br>
-                    <span id="allele_opts0" style="display:block">
+                    (One or multiple)<br>
+                    <span id="allele_opts0" style="display:none" onchange="onAlleleChange(event)">
                         <select name="allele0" size="1"> <!-- onchange="someJSMethod" -->
+                            <option disabled selected value> -- please select -- </option>
                             <option value="HLA-A*01:01">HLA-A*01:01 (A1) </option>
                             <option value="HLA-A*02:01">HLA-A*02:01 (A2) </option>
                             <option value="HLA-A*03:01">HLA-A*03:01 (A3) </option>
@@ -131,8 +158,9 @@
                         </select>
                     </span>
 
-                    <span id="allele_opts1" style="display:none">
+                    <span id="allele_opts1" style="display:none" onchange="onAlleleChange(event)">
                         <select name="allele1" size="1">
+                            <option disabled selected value> -- please select -- </option>
                             <option value="HLA-A*01:01">HLA-A*01:01 </option>
                             <option value="HLA-A*01:02">HLA-A*01:02 </option>
                             <option value="HLA-A*01:03">HLA-A*01:03 </option>
@@ -1023,8 +1051,9 @@
                     </span>
 
 
-                    <span id="allele_opts2" style="display:none">
+                    <span id="allele_opts2" style="display:none" onchange="onAlleleChange(event)">
                         <select name="allele2" size="1">
+                            <option disabled selected value> -- please select -- </option>
                             <option value="HLA-B*07:02">HLA-B*07:02 </option>
                             <option value="HLA-B*07:03">HLA-B*07:03 </option>
                             <option value="HLA-B*07:04">HLA-B*07:04 </option>
@@ -2440,8 +2469,9 @@
                         </select>
                     </span>
 
-                    <span id="allele_opts3" style="display:none">
+                    <span id="allele_opts3" style="display:none" onchange="onAlleleChange(event)">
                         <select name="allele3" size="1">
+                            <option disabled selected value> -- please select -- </option>
                             <option value="HLA-C*01:02">HLA-C*01:02 </option>
                             <option value="HLA-C*01:03">HLA-C*01:03 </option>
                             <option value="HLA-C*01:04">HLA-C*01:04 </option>
@@ -3061,8 +3091,9 @@
                             <option value="HLA-C*18:03">HLA-C*18:03 </option>
                         </select>
                     </span>
-                    <br>
-
+                    <br>Selected alleles:<br>
+                    <input type="text" id="alleleList" name="alleleList" >
+                    <br><br>
                     <script>
 
                     </script>
@@ -3085,7 +3116,7 @@
                             <!--<input type=checkbox name="server" value="IedbAnn">NetMHC 3.4 (queried as IEDB_ann)<br>-->
                             <!--<input type=checkbox name="server" value="IedbNetMHCpan">NetMHCpan 2.8 (queried as IEDB netMHCpan)<br>-->
                           
-                            <input type=checkbox name="server" value="IedbPickPocket"> Pickpocket 1.1 (queried as IEDB_pickpocket)<br/>
+                            <input type=checkbox name="server" value="IedbPickpocket"> Pickpocket 1.1 (queried as IEDB_pickpocket)<br/>
                             <input type=checkbox name="server" value="IedbRecommended"> IEDB Recommended<br>
                             <input type=checkbox name="server" value="IedbConsensus"> IEDB Consensus<br>
                             <input type=checkbox name="server" value="IedbSmmpmbec"> IEDB SMMPMBEC<br>
@@ -3109,14 +3140,34 @@
                     <!-- <textarea name="file_name" rows=1 cols=1 class="form-control"></textarea> -->
                     <br><br> 
                     <b>7) Submit your request</b><br>
-                    <input id="submitButton" type=button value="Submit" class="btn btn-primary"  style="width:150px">
+                    
                    
+                    
+                    
+                    <input id="submitButton" type=button value="Submit" class="btn btn-primary"  style="width:150px">
+                    <span style="display:inline-block;width:10px"></span>
+                    
+                    <input id="cancelButton" type="button" value="Stop" class="btn btn-primary">
+                    <span style="display:inline-block;width:10px"></span>
+                   
+                   
+                    
                     <span id="statusText" class="with-padding"></span>
                      <img id="loadingIcon" height=32 src="img/loading.gif" class="with-padding">
                     <a id="downloadButton" class="with-padding btn btn-success" href="" >Download</a>
                     <br>
-                    <small>Finished queries will only be available for 10 Minutes.</small>
-                    <br><br><br>
+                    <div class="note">
+                     <input id="adaptiveColumns" name = "adaptiveColumns" type="checkbox" checked value="true">
+                     <small style="margin-top:0.5em">Hide unselected methods from the output file</small>
+                    </div>
+                    
+                    <small><b>Note: </b>completed queries will only be available for 10 Minutes.</small>
+                     <br>
+                    
+                    
+                    
+                    
+                    <br>
                     <b>8) For publication of results, please check <a href="cite.html">How to cite</a>.</b>
                     <br><br><br>
                 </div>
@@ -3134,9 +3185,12 @@
                             $(doc).prop("checked", value);
                         });
             }
-
+            
+            
+            
+            
         </script>
-         <script src="js/stateful.js"></script>
+       <script  src="js/stateful.js" sync></script>
         <footer>
             MHCcombine 1.0 was developed and is hosted at the Department for Immunotherapy and Immunoprevention at the German Cancer Research Center (DKFZ) in Heidelberg, Germany. <br>We appreciate notes and comments to improve MHCcombine. <br>Please contact us at:<br><a href="mailto:mhccombine@dkfz-heidelberg.de">mhccombine@dkfz-heidelberg.de<br><br><br><img src="Logo-klein.png"></a>
             <br><br><br><a href="http://www.dkfz.de"><img src="DKFZ_Logo-klein.png"></a>
