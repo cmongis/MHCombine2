@@ -34,18 +34,22 @@ public class NetMHCpan28Query extends AbstractNetMhcQuery {
     }
 
     @Override
-    public String processAllel(String allel) {
+    public String processSingleAllel(String allel) {
         return allel.replace("*", "");
     }
 
     protected List<TemporaryEntry> processLine(String line) {
 
+ 
+        String aLineToWork = line.trim().replaceAll("\\s+", " ");
+        String[] aSplitLine = aLineToWork.split(" ");
+        
         String sequence = null;
         Integer position = null;
         Double score = null;
-
-        String aLineToWork = line.trim().replaceAll("\\s+", " ");
-        String[] aSplitLine = aLineToWork.split(" ");
+        String allel = findCorrespondingAllele(aSplitLine[1]);
+        
+        
         if (aSplitLine.length < 7) {
             logger().warn("not enough input! " + aLineToWork);
             return NO_ENTRY;

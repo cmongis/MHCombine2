@@ -59,7 +59,7 @@ public class NetMHCPan40Query extends AbstractNetMhcQuery {
         String aLineToWork = line.trim().replaceAll("\\s+", " ");
         String[] aSplitLine = aLineToWork.split(" ");
         
-        allel = this.allel; 
+        allel = findCorrespondingAllele(aSplitLine[1]);
         sequence = aSplitLine[2];
         position = Integer.parseInt(aSplitLine[0]);
         score = Double.parseDouble(aSplitLine[12]); // take Aff[nM]

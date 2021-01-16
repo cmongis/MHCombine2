@@ -19,7 +19,8 @@ public class NetMHCPan41Query extends AbstractNetMhcQuery {
 
     }
 
-    public String processAllel(String allel) {
+    @Override
+    public String processSingleAllel(String allel) {
         return allel.replace("*", "");
     }
 
@@ -40,7 +41,7 @@ public class NetMHCPan41Query extends AbstractNetMhcQuery {
         String aLineToWork = line.trim().replaceAll("\\s+", " ");
         String[] aSplitLine = aLineToWork.split(" ");
 
-        allel = this.allel;
+        allel = findCorrespondingAllele(aSplitLine[1]);
         sequence = aSplitLine[2];
         position = Integer.parseInt(aSplitLine[0]);
         score = Double.parseDouble(aSplitLine[15]); // take Aff[nM] 

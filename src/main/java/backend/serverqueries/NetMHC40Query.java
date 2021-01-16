@@ -61,7 +61,7 @@ public class NetMHC40Query extends AbstractNetMhcQuery {
         
 
         // Allel of NetMHC is "HLA-A0101", but everyone else gives "HLA-A*01:01" -> return original allel
-        allel = this.allel;
+        allel = findCorrespondingAllele(aSplitLine[1]);
 
         // add offset to cope with NetMHC being 0-indexed
         position = Integer.parseInt(aSplitLine[0]) + 1;

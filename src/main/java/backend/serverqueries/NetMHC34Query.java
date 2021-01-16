@@ -42,20 +42,25 @@ public class NetMHC34Query extends AbstractNetMhcQuery {
     }
 
     @Override
-    public String processAllel(String allel) {
+    public String processSingleAllel(String allel) {
         return allel.replace("*", "");
     }
 
     protected List<TemporaryEntry> processLine(String line) {
         logger.info(line);
         //    0  HLA-A*02:01     MHQKRTAM sp_P03126_VE6_H         0.036     33984.93    50.00
-        String allel = this.allel;
-        String sequence = null;
-        Integer position = null;
-        Double score = null;
+       
+        
 
         String aLineToWork = line.trim().replaceAll("\\s+", " ");
         String[] aSplitLine = aLineToWork.split(" ");
+        
+        String sequence = null;
+        Integer position = null;
+        Double score = null;
+        String allel = findCorrespondingAllele(aSplitLine[1]);
+         
+         
         if (aSplitLine.length < 6) {
             logger.warn("not enough input! " + aLineToWork);
             return NO_ENTRY;

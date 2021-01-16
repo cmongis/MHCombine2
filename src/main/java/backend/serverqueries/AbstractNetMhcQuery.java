@@ -40,9 +40,12 @@ import backend.serverqueries.exceptions.LineProcessingException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -57,7 +60,7 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
 
     // Query specific parameters
     protected final String sequence;
-    protected final String allel;
+    private final String allel;
     protected final Integer length;
 
     // storing the final result
@@ -93,7 +96,8 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
 
     private final String boundary = "---------------------------183079827324139952612037066";
 
-    private final String netMhcAllel;
+    //private final String netMhcAllel;
+    private final List<Allele> alleleInput;
 
     private final Pattern LINE_RE = Pattern.compile("^\\d+\\s+[\\w\\d\\-\\*\\:]+\\s+");
 
@@ -106,7 +110,7 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
         this.length = length;
         this.results = new HashSet<TemporaryEntry>();
         logger.info("Creating NetMHC query");
-        netMhcAllel = processAllel(allel);
+        alleleInput = processAllel(allel);
 
         if (sequenceFileValue.exists() == false) {
             try {
@@ -132,6 +136,8 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
     protected HttpEntity preparePayload() {
 
         String lengthValue = length == ALL_LENGTHS_CODE ? ALL_LENGTH_VALUE : length.toString();
+
+        String netMhcAllel = getAlleleInputAsFormatedString();
 
         MultipartEntityBuilder builder = MultipartEntityBuilder
                 .create()
@@ -167,7 +173,7 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
             entity.writeTo(System.out);
 
         } catch (IOException e) {
-
+            logger.error(e);
         }
         return entity;
     }
@@ -196,7 +202,7 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
         //postRequest.setHeader("Cookie","__utma=151498347.2065779939.1499803940.1499803940.1499803940.1; __utmb=151498347.3.10.1499803940; __utmc=151498347; __utmz=151498347.1499803940.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided); __utmt=1");
         String location = null;
         int statuscode = HttpStatus.SC_OK;
-        System.out.println(postRequest.toString());
+        //System.out.println(postRequest.toString());
         CloseableHttpClient client = HttpClients.createSystem();
         CloseableHttpResponse originalResponse = null;
         try {
@@ -221,6 +227,7 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
                 location = header[0].getValue();
             } else {
                 logger.warn("Attempted to POST to server, but got back status code of " + statuscode + " with Status line " + originalResponse.getStatusLine());
+            
             }
 
             EntityUtils.consume(originalResponse.getEntity());
@@ -298,10 +305,19 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
         Pattern predictionPattern = getPredictionRecognitionPattern();
 
         boolean wasWaitingPage = true;
-
+        
+        if(response.getStatusLine().getStatusCode() != 200) {
+            while (line!= null) {
+                
+                System.out.println(line);
+                line = reader.readLine();
+            }
+            return false;
+        }
+        
         while (line != null) {
             line = line.trim();
-            
+            System.out.println(line);
             if (line.contains("prediction results")) {
                 wasWaitingPage = false;
             }
@@ -330,7 +346,36 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
         return LINE_RE;
     }
 
-    protected String processAllel(String allel) {
+    private List<Allele> processAllel(String alleleInput) {
+
+        return Stream.of(alleleInput.split(","))
+                .map(allele -> Allele.create(allele, algorithm))
+                .collect(Collectors.toList());
+
+    }
+
+    protected String findCorrespondingAllele(String methodSpecificAlleleOutput) {
+        return alleleInput
+                .stream()
+                .filter(allele
+                        -> 
+                        allele.getName().equals(methodSpecificAlleleOutput)
+                      ||  allele.getInputName().equals((methodSpecificAlleleOutput))
+                || allele.getOutputName().equals(methodSpecificAlleleOutput))
+                .findFirst()
+                .orElse(Allele.INVALID_ALLELE)
+                .getName();
+
+    }
+
+    private String getAlleleInputAsFormatedString() {
+        return alleleInput
+                .stream()
+                .map(Allele::getInputName)
+                .collect(Collectors.joining(","));
+    }
+
+    protected String processSingleAllel(String allel) {
         return allel.replace("*", "").replace(":", "");
     }
 
