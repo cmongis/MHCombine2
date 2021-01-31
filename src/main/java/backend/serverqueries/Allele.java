@@ -63,7 +63,7 @@ public class Allele {
             case NetMHC34:
                 return name.replace("*", "");
             case NetMHC40:
-                return name.replace("*", "");
+                return name.replace("*", "").replace(":","");
            
             case NetMHCpan30:
                 return name.replace("*","");
