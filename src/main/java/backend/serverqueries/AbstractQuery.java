@@ -18,13 +18,17 @@
  */
 package backend.serverqueries;
 
+import backend.entries.Algorithm;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
 import backend.entries.TemporaryEntry;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public abstract class AbstractQuery implements Callable<Set<TemporaryEntry>> {
 
@@ -34,6 +38,12 @@ public abstract class AbstractQuery implements Callable<Set<TemporaryEntry>> {
     
     public static final List<TemporaryEntry> NO_ENTRY = Arrays.asList();
 
+    
+    private Set<Peptide> peptides;
+    
+    
+    private List<Allele> alleleList;
+    
     @Override
     public Set<TemporaryEntry> call() throws Exception {
         logger.info("Starting query for " + getClass().getSimpleName());
@@ -65,6 +75,32 @@ public abstract class AbstractQuery implements Callable<Set<TemporaryEntry>> {
     
     protected boolean isPeptideQuery() {
         return queryInputType == QueryInputType.PEPTIDE;
+    }
+    
+    
+    protected Set<Peptide> getPeptides(String sequence)  {
+        
+       if (peptides == null) {
+            peptides = new HashSet<>();
+
+            Stream.of(sequence.split("\\n"))
+                    .map(Peptide::new)
+                    .forEach(peptides::add);
+        }
+        return peptides;
+    }
+    
+    protected List<Allele> getAlleleList(String alleleInput,Algorithm algorithm) {
+        if(alleleList == null) {
+            alleleList = processAllel(alleleInput, algorithm);
+        }
+        return alleleList;
+    }
+    
+     protected List<Allele> processAllel(String alleleInput, Algorithm algorithm) {
+        return Stream.of(alleleInput.split(","))
+                .map(allele -> Allele.create(allele, algorithm))
+                .collect(Collectors.toList());
     }
 
 }
