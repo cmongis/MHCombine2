@@ -72,10 +72,13 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
     private final String configFileName = "configfile";
     private final String inputTypeName = "inp";
     private final String sequenceName = "SEQPASTE";
+    private String sequenceValue = "";
     private final String sequenceFileName = "SEQSUB"; // not required
     private String lengthName = "len";
     private final String peptideName = "PEPPASTE";
     private final String peptideFileName = "PEPSUB"; // not required
+    private String peptideValue = "";
+
     private final String masterName = "master";
     private final String slave0Name = "slave0";
     private final String alleleName = "allele";
@@ -87,9 +90,8 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
 
     // form parameters default
     private final String configFileValue;
-    private final String inputTypeValue = "0"; // 0 means FASTA, 1 means Peptides
+    private String inputTypeValue = "0"; // 0 means FASTA, 1 means Peptides
     private final File sequenceFileValue = new File(new File(System.getProperty("java.io.tmpdir")), "netmhcempty"); // not required
-    private final String peptideValue = "";
     private String masterValue = "1";
     private final String thresholdStrongValue = "0.5";
     private final String thresholdWeakValue = "2";
@@ -101,6 +103,8 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
 
     private final Pattern LINE_RE = Pattern.compile("^\\d+\\s+[\\w\\d\\-\\*\\:]+\\s+");
 
+    private static final String REJECTED_MARKER = "Job rejected due to illegal input";
+
     public AbstractNetMhcQuery(Algorithm algorithm, String configFile, String sequence, String allel, Integer length) {
 
         this.algorithm = algorithm;
@@ -110,7 +114,7 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
         this.length = length;
         this.results = new HashSet<TemporaryEntry>();
         logger.info("Creating NetMHC query");
-        alleleInput = processAllel(allel);
+        alleleInput = processAllel(allel,algorithm);
 
         if (sequenceFileValue.exists() == false) {
             try {
@@ -119,6 +123,8 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
                 java.util.logging.Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
             }
         }
+        updateQueryParametersFromInputType();
+
     }
 
     public Logger logger() {
@@ -133,6 +139,12 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
         this.masterValue = masterValue;
     }
 
+    @Override
+    public void setQueryInputType(QueryInputType inputType) {
+        super.setQueryInputType(inputType);
+        updateQueryParametersFromInputType();
+    }
+
     protected HttpEntity preparePayload() {
 
         String lengthValue = length == ALL_LENGTHS_CODE ? ALL_LENGTH_VALUE : length.toString();
@@ -144,8 +156,6 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
                 .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
                 .setBoundary(boundary)
                 .addTextBody(configFileName, configFileValue)
-                .addTextBody(sequenceName, sequence)
-                .addBinaryBody(sequenceFileName, sequenceFileValue, ContentType.APPLICATION_OCTET_STREAM, "")
                 .addTextBody(lengthName, lengthValue)
                 //.addBinaryBody(sequenceFileName, sequenceFileValue, ContentType.APPLICATION_OCTET_STREAM, "") // file may not be null
 
@@ -153,16 +163,7 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
                 .addTextBody(masterName, masterValue)
                 .addTextBody(slave0Name, netMhcAllel)
                 .addTextBody(alleleName, netMhcAllel);
-
-        if (!getAlgorithm().equals(Algorithm.NetMHC34)) {
-            builder.addTextBody(inputTypeName, inputTypeValue)
-                    .addTextBody(peptideName, peptideValue)
-                    .addBinaryBody(peptideFileName, sequenceFileValue, ContentType.APPLICATION_OCTET_STREAM, "")
-                    .addTextBody(thresholdStrongName, thresholdStrongValue)
-                    .addTextBody(thresholdWeakName, thresholdWeakValue);
-            ;
-
-        }
+        
 
         // specific entity building
         builder = preparePayload(builder);
@@ -179,7 +180,32 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
     }
 
     protected MultipartEntityBuilder preparePayload(MultipartEntityBuilder builder) {
-        return builder;
+        return builder
+                .addTextBody(inputTypeName, inputTypeValue)
+                .addTextBody(sequenceName, sequenceValue)
+                .addBinaryBody(sequenceFileName, sequenceFileValue, ContentType.APPLICATION_OCTET_STREAM, "")
+                .addTextBody(peptideName, peptideValue)
+                .addBinaryBody(peptideFileName, sequenceFileValue, ContentType.APPLICATION_OCTET_STREAM, "")
+                .addTextBody(thresholdStrongName, thresholdStrongValue)
+                .addTextBody(thresholdWeakName, thresholdWeakValue);
+    }
+
+    /**
+     *
+     * This function makes sure that the query parameters reflects the
+     * QueryInputType
+     */
+    private void updateQueryParametersFromInputType() {
+        if (getQueryInputType() == QueryInputType.PEPTIDE) {
+            peptideValue = sequence;
+            sequenceValue = "";
+            inputTypeValue = "1";
+        } else {
+            peptideValue = "";
+            sequenceValue = sequence;
+            inputTypeValue = "0";
+        }
+
     }
 
     public Algorithm getAlgorithm() {
@@ -227,7 +253,7 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
                 location = header[0].getValue();
             } else {
                 logger.warn("Attempted to POST to server, but got back status code of " + statuscode + " with Status line " + originalResponse.getStatusLine());
-            
+
             }
 
             EntityUtils.consume(originalResponse.getEntity());
@@ -305,19 +331,25 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
         Pattern predictionPattern = getPredictionRecognitionPattern();
 
         boolean wasWaitingPage = true;
-        
-        if(response.getStatusLine().getStatusCode() != 200) {
-            while (line!= null) {
-                
+
+        if (response.getStatusLine().getStatusCode() != 200) {
+            while (line != null) {
+
                 System.out.println(line);
                 line = reader.readLine();
             }
             return false;
         }
-        
+
         while (line != null) {
             line = line.trim();
+
             System.out.println(line);
+            if (line.contains(REJECTED_MARKER)) {
+                System.out.println(line);
+                throw new IllegalArgumentException(line);
+            }
+
             if (line.contains("prediction results")) {
                 wasWaitingPage = false;
             }
@@ -346,21 +378,14 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
         return LINE_RE;
     }
 
-    private List<Allele> processAllel(String alleleInput) {
 
-        return Stream.of(alleleInput.split(","))
-                .map(allele -> Allele.create(allele, algorithm))
-                .collect(Collectors.toList());
-
-    }
 
     protected String findCorrespondingAllele(String methodSpecificAlleleOutput) {
         return alleleInput
                 .stream()
                 .filter(allele
-                        -> 
-                        allele.getName().equals(methodSpecificAlleleOutput)
-                      ||  allele.getInputName().equals((methodSpecificAlleleOutput))
+                        -> allele.getName().equals(methodSpecificAlleleOutput)
+                || allele.getInputName().equals((methodSpecificAlleleOutput))
                 || allele.getOutputName().equals(methodSpecificAlleleOutput))
                 .findFirst()
                 .orElse(Allele.INVALID_ALLELE)

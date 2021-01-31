@@ -73,8 +73,6 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
     private final IsEmptyStringPredicate isEmptyPredicate = new IsEmptyStringPredicate();
 
     private final Set<TemporaryEntry> results = new HashSet<>();
-
-    private Set<Peptide> peptides;
     
     
     private final static int PEPTIDE_LENGTH_MIN = 8;
@@ -151,14 +149,7 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
     }
 
     public Set<Peptide> getPeptides() {
-        if (peptides == null) {
-            peptides = new HashSet<>();
-
-            Stream.of(sequence.split("\\n"))
-                    .map(Peptide::new)
-                    .forEach(peptides::add);
-        }
-        return peptides;
+        return this.getPeptides(sequence);
     }
 
     public Set<TemporaryEntry> queryServer() {
@@ -207,12 +198,15 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
 
                 if (processing) {
                     try {
+                        
+                        
+                        
                         for (TemporaryEntry entry : processLine(line)) {
                             
                             // if it's peptide query, we only wants the peptides previously entered
                             if(isPeptideQuery()) {
                                 Peptide peptide = new Peptide((entry.getSequence()));
-                                if (peptides.contains(peptide)) {
+                                if (getPeptides().contains(peptide)) {
                                     results.add(entry);
                                 }
                             }
@@ -286,5 +280,7 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
             return t != null && "".equals(t.trim()) == false;
         }
     }
+    
+  
 
 }
