@@ -6,12 +6,10 @@
 package backend;
 
 import backend.serverqueries.AbstractQuery;
-import backend.serverqueries.NetMHC34Query;
 import backend.serverqueries.NetMHC40Query;
 import backend.serverqueries.NetMHCPan30Query;
 import backend.serverqueries.NetMHCPan40Query;
 import backend.serverqueries.NetMHCPan41Query;
-import backend.serverqueries.NetMHCPan28Query;
 import backend.serverqueries.QueryInputType;
 import backend.serverqueries.SyfpeithiQuery;
 import java.util.ArrayList;
@@ -68,9 +66,8 @@ public class GenericQueryFactory implements QueryFactoryInterface{
     }
 
     @Override
-    public boolean support(String server) {
-        
-        return server.contains("NetMHC") || server.contains("");
+    public boolean support(String server) { 
+        return server.contains("NetMHC");
     }
     
 }
