@@ -27,9 +27,9 @@ import java.util.List;
  *
  * @author cyril
  */
-public class NetMHCpan28Query extends AbstractNetMhcQuery {
+public class NetMHCPan28Query extends AbstractNetMhcQuery {
 
-    public NetMHCpan28Query(String sequence, String allel, Integer length) {
+    public NetMHCPan28Query(String sequence, String allel, Integer length) {
         super(Algorithm.NetMHCpan28, "/usr/opt/www/pub/CBS/services/NetMHCpan-2.8/NetMHCpan.cf", sequence, allel, length);
     }
 
