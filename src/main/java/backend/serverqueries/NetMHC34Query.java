@@ -22,8 +22,11 @@ import backend.entries.TemporaryEntry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import backend.entries.Algorithm;
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 
 /**
  *
@@ -37,9 +40,15 @@ public class NetMHC34Query extends AbstractNetMhcQuery {
         super(Algorithm.NetMHC34, "/usr/opt/www/pub/CBS/services/NetMHC-3.4/NetMHC.cf", sequence, allel, length);
 
         setLengthName("peplen");
-        setMasterValue("2");
+        setMasterValue("1");
+        
 
     }
+    
+    private final String sequenceName = "SEQPASTE";
+    private String sequenceValue = "";
+    private final String sequenceFileName = "SEQSUB";
+    private final File sequenceFileValue = new File(new File(System.getProperty("java.io.tmpdir")), "netmhcempty");
 
     @Override
     public String processSingleAllel(String allel) {
@@ -79,4 +88,24 @@ public class NetMHC34Query extends AbstractNetMhcQuery {
 
         return Arrays.asList(scoreEntry);
     }
+
+    @Override
+    protected MultipartEntityBuilder preparePayload(MultipartEntityBuilder builder) {
+        
+       builder
+                .addTextBody(sequenceName, sequence)
+                .addBinaryBody(sequenceFileName, sequenceFileValue, ContentType.APPLICATION_OCTET_STREAM, "");
+                
+        
+        if(isPeptideQuery()) {
+            builder.addTextBody("master","1");
+            builder.addTextBody("peptide", "on");
+        }
+        else {
+            builder.addTextBody("master","2");
+        }
+        return builder;
+    }
+    
+    
 }
