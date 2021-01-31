@@ -75,6 +75,8 @@ public class SyfpeithiQuery extends AbstractQuery {
 
     private final LineProcessor lineProcessor = new LineProcessor();
 
+    private Set<Peptide> peptides;
+    
     public SyfpeithiQuery(String sequence, String allel, int length) {
         this.sequence = preprocessFastaSequence(sequence);
         this.originalAllel = allel;
@@ -82,10 +84,18 @@ public class SyfpeithiQuery extends AbstractQuery {
                 .getSyfpeithiAllelForGeneralAllel(originalAllel);
         this.length = length;
         this.results = new HashSet<TemporaryEntry>();
+        
     }
 
+    protected Set<Peptide> getPeptides() {
+        return this.getPeptides(sequence);
+    }
+    
     @Override
     protected Set<TemporaryEntry> queryServer() {
+        
+        
+       
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair(allelText, allel));
         params.add(new BasicNameValuePair(lengthText, length + ""));
@@ -197,6 +207,11 @@ public class SyfpeithiQuery extends AbstractQuery {
 
         String currentScore;
 
+
+        
+        
+        
+        
         public void feed(String line) {
 
             currentPos = extract(RE_POS, line, currentPos);
@@ -220,9 +235,22 @@ public class SyfpeithiQuery extends AbstractQuery {
         private void addCurrentEntry() {
             if (currentPos != null && currentSequence != null && currentScore != null) {
                 currentSequence = currentSequence.replaceAll("&nbsp;", "").replaceAll("</td>", ";").replaceAll("<[^<>]*>", "").toUpperCase().trim();
-
+                
                 TemporaryEntry entry = new TemporaryEntry(originalAllel, currentSequence, Integer.decode(currentPos), Algorithm.SYFPEITHI.toColumn(), Double.parseDouble(currentScore));
-                results.add(entry);
+
+                
+                // if it's peptide query, we only wants the peptides previously entered
+                if (isPeptideQuery()) {
+                    Peptide peptide = new Peptide((entry.getSequence()));
+                    if (getPeptides().contains(peptide)) {
+                        results.add(entry);
+                    }
+                } // otherwise, we want everything
+                else {
+                    results.add(entry);
+                }
+
+                //results.add(entry);
             }
         }
 
