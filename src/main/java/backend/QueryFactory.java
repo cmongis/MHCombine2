@@ -22,20 +22,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import backend.serverqueries.AbstractQuery;
-import backend.serverqueries.IedbConsensusQuery;
-import backend.serverqueries.IedbNetMHCconsQuery;
-import backend.serverqueries.IedbPickpocketQuery;
-import backend.serverqueries.IedbRecommendedQuery;
-import backend.serverqueries.IedbSmmQuery;
-import backend.serverqueries.IedbSmmpmbecQuery;
-import backend.serverqueries.NetMHCPan28Query;
-import backend.serverqueries.NetMHC34Query;
-import backend.serverqueries.NetMHCPan30Query;
-import backend.serverqueries.NetMHCPan40Query;
-import backend.serverqueries.NetMHCPan41Query;
-import backend.serverqueries.NetMHC40Query;
 import backend.serverqueries.QueryInputType;
-import backend.serverqueries.SyfpeithiQuery;
 import java.util.ArrayList;
 import java.util.List;
 
