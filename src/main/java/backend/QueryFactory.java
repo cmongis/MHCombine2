@@ -28,7 +28,7 @@ import backend.serverqueries.IedbPickpocketQuery;
 import backend.serverqueries.IedbRecommendedQuery;
 import backend.serverqueries.IedbSmmQuery;
 import backend.serverqueries.IedbSmmpmbecQuery;
-import backend.serverqueries.NetMHCpan28Query;
+import backend.serverqueries.NetMHCPan28Query;
 import backend.serverqueries.NetMHC34Query;
 import backend.serverqueries.NetMHCPan30Query;
 import backend.serverqueries.NetMHCPan40Query;
@@ -48,6 +48,7 @@ public class QueryFactory {
     public QueryFactory() {
         factories.add(new GenericQueryFactory());
         factories.add(new IedbQueryFactory());
+        factories.add(new MultiAlelleFactoryWrapper(new SyfpeithiFactory()));
     }
     
     //TODO: Transform this factory to return a list of queries
