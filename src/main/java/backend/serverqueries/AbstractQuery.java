@@ -42,7 +42,7 @@ public abstract class AbstractQuery implements Callable<Set<TemporaryEntry>> {
     private Algorithm algorithm;
 
     
-    private boolean logging = true;
+    private boolean logging = false;
     
     private Set<Peptide> peptides;
     
