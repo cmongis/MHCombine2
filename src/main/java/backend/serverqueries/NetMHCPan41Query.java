@@ -55,7 +55,8 @@ public class NetMHCPan41Query extends AbstractNetMhcQuery {
     }
 
     protected MultipartEntityBuilder preparePayload(MultipartEntityBuilder builder) {
-        return builder.addTextBody("BApred", "on");
+        
+        return super.preparePayload(builder).addTextBody("BApred", "on");
     }
 
 }

@@ -51,11 +51,11 @@ public class NetMHCPan28Query extends AbstractNetMhcQuery {
         
         
         if (aSplitLine.length < 7) {
-            logger().warn("not enough input! " + aLineToWork);
+            logger().warning("not enough input! " + aLineToWork);
             return NO_ENTRY;
         } else if (aSplitLine.length > 9) {
             // Strong and weak binders have last entry "<= WB", which gives two fields in the array!
-            logger().warn("too much input! " + aLineToWork);
+            logger().warning("too much input! " + aLineToWork);
             return NO_ENTRY;
         }
 

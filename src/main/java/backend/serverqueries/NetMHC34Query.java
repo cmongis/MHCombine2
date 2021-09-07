@@ -56,7 +56,7 @@ public class NetMHC34Query extends AbstractNetMhcQuery {
     }
 
     protected List<TemporaryEntry> processLine(String line) {
-        logger.info(line);
+        
         //    0  HLA-A*02:01     MHQKRTAM sp_P03126_VE6_H         0.036     33984.93    50.00
        
         
@@ -67,9 +67,14 @@ public class NetMHC34Query extends AbstractNetMhcQuery {
         String sequence = null;
         Integer position = null;
         Double score = null;
-        String allel = findCorrespondingAllele(aSplitLine[1]);
+        
+        // when there is a WB, the columns appears before protein name.
+        //  86  CYSLYGTTL         0.563          113         WB sp_P03126_VE6_H HLA-A24:02
+        int allelIndex = aSplitLine.length == 7 ? 6 : 5;
+        
+        String allel = findCorrespondingAllele(aSplitLine[allelIndex]);
          
-         
+        
         if (aSplitLine.length < 6) {
             logger.warn("not enough input! " + aLineToWork);
             return NO_ENTRY;

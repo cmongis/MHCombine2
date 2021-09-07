@@ -32,8 +32,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 
 import backend.entries.TemporaryEntry;
 import backend.serverqueries.exceptions.LineProcessingException;
@@ -42,21 +41,23 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 
 public abstract class AbstractNetMhcQuery extends AbstractQuery {
 
-    private final Logger logger = LogManager.getLogger(AbstractNetMhcQuery.class);
+    private final Logger logger = Logger.getLogger(this.getClass().getSimpleName());
 
     // form we want to query (the same for all NetMHC servers)
     private final String baseURL = "http://www.cbs.dtu.dk";
     private final String queryForm = "/cgi-bin/webface2.fcgi";
+    
+    private final int RESULT_CHECK_DELAY = 1000;
 
     // Query specific parameters
     protected final String sequence;
@@ -66,7 +67,6 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
     // storing the final result
     private final Set<TemporaryEntry> results;
 
-    private Algorithm algorithm;
 
     // form parameters names
     private final String configFileName = "configfile";
@@ -107,7 +107,8 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
 
     public AbstractNetMhcQuery(Algorithm algorithm, String configFile, String sequence, String allel, Integer length) {
 
-        this.algorithm = algorithm;
+        setAlgorithm(algorithm);
+
         this.sequence = sequence;
         this.configFileValue = configFile;
         this.allel = allel;
@@ -174,7 +175,7 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
             entity.writeTo(System.out);
 
         } catch (IOException e) {
-            logger.error(e);
+            logger.log(Level.SEVERE,"Error when writing to system output",e);
         }
         return entity;
     }
@@ -208,9 +209,7 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
 
     }
 
-    public Algorithm getAlgorithm() {
-        return algorithm;
-    }
+   
 
     @Override
     protected Set<TemporaryEntry> queryServer() {
@@ -218,6 +217,8 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
         // Step 1: Submit Job
         HttpEntity entity = preparePayload();
         HttpPost postRequest = new HttpPost(baseURL + queryForm);
+        
+        
         postRequest.setEntity(entity);
         //postRequest.setHeader("Referer", "http://www.cbs.dtu.dk/services/NetMHC-3.4/");
         postRequest.setHeader("Content-Type", "multipart/form-data; boundary=---------------------------183079827324139952612037066");
@@ -229,12 +230,15 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
         String location = null;
         int statuscode = HttpStatus.SC_OK;
         //System.out.println(postRequest.toString());
+        log("[POST REQUEST] %s",postRequest.toString());
         CloseableHttpClient client = HttpClients.createSystem();
         CloseableHttpResponse originalResponse = null;
         try {
             // execute POST to submit Job
             originalResponse = client.execute(postRequest);
             statuscode = originalResponse.getStatusLine().getStatusCode();
+            log("[Response] %d",statuscode);
+
             if (statuscode == HttpStatus.SC_OK) {
                 // No redirect? Process the original result.
                 logger.info("No redirect, processing the result.");
@@ -247,25 +251,25 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
                 if (header.length == 0) {
                     // no redirect location, this means no idea where our result is.
                     // abort.
-                    logger.error("Retrieving header for this query returned no location. Cannot process this redirect.");
+                    logger.severe("Retrieving header for this query returned no location. Cannot process this redirect.");
                     return results;
                 }
                 location = header[0].getValue();
             } else {
-                logger.warn("Attempted to POST to server, but got back status code of " + statuscode + " with Status line " + originalResponse.getStatusLine());
+                logger.warning("Attempted to POST to server, but got back status code of " + statuscode + " with Status line " + originalResponse.getStatusLine());
 
             }
 
             EntityUtils.consume(originalResponse.getEntity());
         } catch (IOException e) {
-            logger.error("Exception while executing POST. Abort.", e);
+            logger.log(Level.SEVERE,"Exception while executing POST. Abort.", e);
             return results; // do not recover from this.
         } finally {
             if (originalResponse != null) {
                 try {
                     originalResponse.close();
                 } catch (IOException e) {
-                    logger.error("Exception while closing POST's original response. Abort.", e);
+                    logger.log(Level.SEVERE,"Exception while closing POST's original response. Abort.", e);
                     return results; // do not recover from this.
                 }
             }
@@ -275,7 +279,7 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
         // if we do not have any redirect location, we do not know where our
         // results are...
         if (location == null) {
-            logger.warn("No redirect location! Abort.");
+            logger.warning("No redirect location! Abort.");
             return results; // cannot recover
         }
         boolean responseIsWait = true;
@@ -285,22 +289,25 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
             try {
                 response = client.execute(getRequest);
                 statuscode = response.getStatusLine().getStatusCode();
+                
+                log("[Response] %d",statuscode);
+                
                 if (statuscode == HttpStatus.SC_OK) {
                     responseIsWait = processResponse(response);
                 } else {
-                    logger.error("StatusLine returned was " + response.getStatusLine() + ". Abort.");
+                    logger.severe("StatusLine returned was " + response.getStatusLine() + ". Abort.");
                     break; // do not recover?
                 }
                 // needed to properly close connection.
                 EntityUtils.consume(response.getEntity());
             } catch (IOException e) {
-                logger.error("Exception happened while querying for results. Abort.", e);
+                logger.log(Level.SEVERE,"Exception happened while querying for results. Abort.", e);
                 return results; // do not recover from this.
             } finally {
                 try {
                     response.close();
                 } catch (IOException e) {
-                    logger.error("Exception happened while closing response. Abort.", e);
+                    logger.log(Level.SEVERE,"Exception happened while closing response. Abort.", e);
                     return results; // do not recover from this.
                 }
             }
@@ -308,9 +315,9 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
             if (responseIsWait) {
                 try {
                     logger.info("waiting 2 seconds");
-                    Thread.sleep(2000);
+                    Thread.sleep(RESULT_CHECK_DELAY);
                 } catch (InterruptedException e) {
-                    logger.error("Interrupted while sleeping!", e);
+                    logger.log(Level.SEVERE,"Interrupted while sleeping!", e);
                 }
             }
         }
@@ -320,7 +327,7 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
 
     protected boolean processResponse(CloseableHttpResponse response) throws IllegalStateException, IOException {
 
-        logger.info("Processing response");
+        log("Processing response");
 
         boolean resultsAvailable = false;
         HttpEntity responseEntity = response.getEntity();
@@ -335,7 +342,8 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
         if (response.getStatusLine().getStatusCode() != 200) {
             while (line != null) {
 
-                System.out.println(line);
+                //System.out.println(line);
+                log("[RESPONSE %d] %s",response.getStatusLine().getStatusCode(),line);
                 line = reader.readLine();
             }
             return false;
@@ -343,10 +351,12 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
 
         while (line != null) {
             line = line.trim();
+            
+            log("[RESPONSE %d] %s",response.getStatusLine().getStatusCode(),line);
 
-            System.out.println(line);
+            //System.out.println(line);
             if (line.contains(REJECTED_MARKER)) {
-                System.out.println(line);
+                //System.out.println(line);
                 throw new IllegalArgumentException(line);
             }
 
@@ -381,14 +391,20 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
 
 
     protected String findCorrespondingAllele(String methodSpecificAlleleOutput) {
-        return alleleInput
+        Allele correspondingAllele =  alleleInput
                 .stream()
                 .filter(allele
                         -> allele.getName().equals(methodSpecificAlleleOutput)
                 || allele.getInputName().equals((methodSpecificAlleleOutput))
                 || allele.getOutputName().equals(methodSpecificAlleleOutput))
                 .findFirst()
-                .orElse(Allele.INVALID_ALLELE)
+                .orElse(Allele.INVALID_ALLELE);
+       
+        if(correspondingAllele == Allele.INVALID_ALLELE) {
+            String alleleList =  alleleInput.stream().map(allele-> allele.getInputName(getAlgorithm())).collect(Collectors.joining(","));
+            logger.warning(String.format("Couldn't find allele for %s in  '%s'\nLine",methodSpecificAlleleOutput,alleleList));
+        }
+        return correspondingAllele
                 .getName();
 
     }
@@ -403,5 +419,5 @@ public abstract class AbstractNetMhcQuery extends AbstractQuery {
     protected String processSingleAllel(String allel) {
         return allel.replace("*", "").replace(":", "");
     }
-
+    
 }
