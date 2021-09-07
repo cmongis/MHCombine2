@@ -220,7 +220,7 @@ public class ServerQuerier extends HttpServlet {
         QueryFactory factory = new QueryFactory();
         for (String server : servers) {
             for (String aLength : lengths) {
-                List<AbstractQuery> newQueries = factory.createQueryForServer(server, sequence, allel, Integer.parseInt(aLength),QueryInputType.SEQUENCE);
+                List<AbstractQuery> newQueries = factory.createQueryForServer(server, sequence, allel, aLength,QueryInputType.SEQUENCE);
                 if (newQueries.size() > 0) {
                     queries.addAll(newQueries);
                 } else {

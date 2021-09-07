@@ -39,6 +39,10 @@ public class QueryFileJob implements FileJob {
     public void setConfig(String string, Object o) {
         job.setConfig(string, o);
     }
+    
+    public void cancel() {
+        job.cancel();
+    }
 
     
     @Override
@@ -52,7 +56,7 @@ public class QueryFileJob implements FileJob {
     }
 
     @Override
-    public void setObserver(QueryObserver observer) {
+    public void setObserver(QueryJobObserver observer) {
         job.setObserver(observer);
     }
 
@@ -118,6 +122,10 @@ public class QueryFileJob implements FileJob {
     @Override
     public void setFileName(String filename) {
         job.setFileName(filename);
+    }
+    
+    public int getRunning() {
+        return job.getRunning();
     }
 
 }
