@@ -9,6 +9,7 @@
 
 var initialState = {
     running: false,
+    querying: false,
     ready: false,
     status: "",
     currentId: undefined,
@@ -38,8 +39,8 @@ function resetState() {
 
 
     // in case a new job started while in  a mean time.
-    if (currentState.running)
-        return;
+    //if (currentState.running)
+    //    return;
 
 
     currentState = {};
@@ -69,14 +70,19 @@ function updateView() {
 
 // Check the state of the job by querying the server
 function checkState() {
-
+    
+    
+    if(currentState.running == false) {
+        return;
+    }
+    
     // get request of the job information
     $.ajax({
         url: "job?id=" + currentState.currentId
         , type: "GET"
 
         , success: function (data) {
-            console.log(data);
+            
             currentState.running = data.finished !== true;
             currentState.ready = data.finished;
             currentState.status = data.status;
@@ -85,7 +91,7 @@ function checkState() {
                 setTimeout(checkState, 1000);
             }
             updateView();
-        }
+        } 
     });
 }
 
@@ -98,19 +104,33 @@ $(document).ready(function () {
 
     // add the submit event to the download button
     submitButton.click(function () {
+        console.log(currentState);
+        if(currentState.running) {
+            //resetState();
+            $.ajax({
+                url:"cancel?id="+currentState.currentId
+                ,type: "GET"
+                ,success: function (data) {
+                    resetState();
+                }
+            });
+            resetState();
+        }
+        else {
 
-        $.ajax({
-            url: "job"
-            , type: "POST"
-            , data: form.serialize()
-            , success: function (data) {
-                currentState.currentId = data.id;
-                currentState.running = true;
-                updateView(currentState);
+            $.ajax({
+                url: "job"
+                , type: "POST"
+                , data: form.serialize()
+                , success: function (data) {
+                    currentState.currentId = data.id;
+                    currentState.running = true;
+                    updateView(currentState);
 
-                checkState();
-            }
-        });
+                    checkState();
+                }
+            });
+    }
     });
 
 
