@@ -14,27 +14,37 @@ public class ProgressStringifier {
     
     
     public static String stringify(Job job) {
+        
+        
+        
+        
         StringBuilder builder = new StringBuilder(100);
         
+        String status;
+        
+        
+        
         if(job.getTotal()== 0) {
-            builder.append("Pending...");
+            status = "Pending...";
         }
         else if (job.hasSucceeded()) {
-            builder.append("Success.");
+            status = "Success.";
         }
         else if(job.isFinished()) {
-            builder.append("Error.");
+           status = "Error!";
         }
         else {
-            builder.append("Processing ... ");
+            status = "Processing ... ";
         }
-        builder = builder
-                .append(" (")
-                .append(job.getProgress())
-                .append("/")
-                .append(job.getTotal())
-                .append(")");
-                
-        return builder.toString();
+        
+        return String.format(
+                "%s (Running: %d, Finished: %d/%d)"
+                ,status
+                ,job.getRunning()
+                ,job.getProgress()
+                ,job.getTotal()
+                );
+        
+   
     }
 }
