@@ -1,6 +1,7 @@
 
 import backend.ConsoleQueryObserver;
 import backend.QueryJob;
+import backend.serverqueries.QueryInputType;
 import org.junit.Test;
 import utils.Constants;
 
@@ -20,11 +21,11 @@ public class QueryJobTester {
     @Test
     public void testQueryJob() {
         QueryJob job = new QueryJob();
-        job.configure("MHQKRTAMFQDPQERPRKLPQLCTELQTTIHDIILECVYCKQQLLRREVYDFAFRDLCIV"
+        job.configure(QueryInputType.SEQUENCE,"MHQKRTAMFQDPQERPRKLPQLCTELQTTIHDIILECVYCKQQLLRREVYDFAFRDLCIV"
                 , "HLA-A*02:01"
                 , "8"
-                ,"NetMHC40"
-        ,"IEDBNetMHCcons");
+                ,"NetMHC40","NetMHCpan41"
+        ,"IedbNetMHCcons");
         
         ConsoleQueryObserver observer = new ConsoleQueryObserver(job);
         job.setObserver(observer);
