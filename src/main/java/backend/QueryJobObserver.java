@@ -5,18 +5,12 @@
  */
 package backend;
 
-import backend.serverqueries.AbstractQuery;
-
 /**
  *
  * @author cyrilmongis
  */
-public interface QueryObserver {
-    
-    
-    void notifyStart(AbstractQuery query);
-    
-    void notifyEnd(AbstractQuery query);
-    
-    
+public interface QueryJobObserver {
+    void setStarted();
+    void setFinished();
+    void notifyProgress();
 }

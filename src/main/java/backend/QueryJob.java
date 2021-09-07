@@ -49,22 +49,22 @@ import backend.entries.EntryKey;
 import backend.entries.ResultEntry;
 import backend.entries.TemporaryEntry;
 import backend.serverqueries.AbstractQuery;
-import java.util.concurrent.TimeUnit;
 import backend.entries.ResultColumn;
 import backend.entries.ResultColumns;
 import backend.serverqueries.QueryInputType;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * Servlet implementation class ServerQuerier
  */
-public class QueryJob implements Job {
+public class QueryJob implements Job,QueryObserver {
 
     private static final long serialVersionUID = 1L;
 
     private static final Logger logger = LogManager.getLogger(QueryJob.class);
 
-    private static final int THREAD_POOL_SIZE = 15;
+    private static final int THREAD_POOL_SIZE = 10;
 
     private OutputStream outputStream;
 
@@ -80,25 +80,35 @@ public class QueryJob implements Job {
 
     private boolean finished = false;
 
-    private QueryObserver observer;
+    private QueryJobObserver observer;
 
     private String id;
 
     private int totalQueries;
 
     private int progress = 0;
+    
+    private int running = 0;
 
     private Throwable error;
 
     private String fileName;
-
-    private QueryInputType queryInputType = QueryInputType.SEQUENCE;
     
+    
+    
+    private QueryInputType queryInputType = QueryInputType.SEQUENCE;
+
+    final private ExecutorService multithreadedService = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+    final private ExecutorService singleThreadedService = Executors.newFixedThreadPool(2);
+
     private final long creation = System.currentTimeMillis();
-    private final long START_QUERY_INTERVAL = 250; //milliseconds
+    private final long START_QUERY_INTERVAL = 0; //milliseconds
     private boolean adaptiveColumn = false;
     private final String ADAPTIVE_COLUMNS = "adaptiveColumns";
+    
 
+    private List<AbstractQuery> allQueries = new ArrayList<>();
+    
     public void configure(QueryInputType queryInputType, String sequence, String allel, String len, String... servers) {
         this.queryInputType = queryInputType;
         this.sequence = sequence;
@@ -109,9 +119,9 @@ public class QueryJob implements Job {
 
     @Override
     public void setConfig(String key, Object value) {
-        if(ADAPTIVE_COLUMNS.equals(key) && value != null) {
+        if (ADAPTIVE_COLUMNS.equals(key) && value != null) {
             setAdaptiveColumn("true".equals(value));
-        } 
+        }
     }
 
     @Override
@@ -122,8 +132,7 @@ public class QueryJob implements Job {
         try {
             createCsvFile(results, ";", outputStream);
             outputStream.close();
-            
-            
+
             succeeded = true;
         } catch (Exception e) {
             logger.error(e);
@@ -138,8 +147,6 @@ public class QueryJob implements Job {
         }
 
     }
-    
-    
 
     public void setAdaptiveColumn(boolean adaptiveColumn) {
         this.adaptiveColumn = adaptiveColumn;
@@ -148,11 +155,11 @@ public class QueryJob implements Job {
     public boolean isAdaptiveColumn() {
         return adaptiveColumn;
     }
-    
+
     public boolean isMultiAllels() {
         return allel.contains(",");
     }
-    
+
     public boolean isPeptideQuery() {
         return queryInputType == QueryInputType.PEPTIDE;
     }
@@ -164,14 +171,14 @@ public class QueryJob implements Job {
             return Arrays.asList(ResultColumns.ALL);
 
         } else {
-             List<ResultColumn> columnList = new ArrayList();
-             for(ResultColumn column : ResultColumns.ALL) {
-                 
-                 if(column.isAlgorithmInList(servers)) {
-                     columnList.add(column);
-                 }
-             }
-             return columnList;
+            List<ResultColumn> columnList = new ArrayList();
+            for (ResultColumn column : ResultColumns.ALL) {
+
+                if (column.isAlgorithmInList(servers)) {
+                    columnList.add(column);
+                }
+            }
+            return columnList;
         }
     }
 
@@ -180,44 +187,75 @@ public class QueryJob implements Job {
             return null;
         }
 
+        // generating all the queries
         List<AbstractQuery> queries = getQueriesforServers(servers, sequence, allel, length);
 
-        ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-        CompletionService<Set<TemporaryEntry>> completionService = new ExecutorCompletionService<Set<TemporaryEntry>>(
-                executor);
-
-        Map<EntryKey, ResultEntry> results = new HashMap<EntryKey, ResultEntry>();
         totalQueries = queries.size();
 
+        // Map to hold the results
+        Map<EntryKey, ResultEntry> results = new HashMap<EntryKey, ResultEntry>();
+
+        // filter the queries into two groups: the one that can occurs in Parallel...
+        List<AbstractQuery> multiThreadedQueries = queries.stream().filter(query -> query.isSingleThread() == false).collect(Collectors.toList());
+
+        // ... and the ones that can only happen in one thread
+        List<AbstractQuery> singleThreadQueries = queries.stream().filter(query -> query.isSingleThread() == true).collect(Collectors.toList());
+
+        
+        allQueries.addAll(multiThreadedQueries);
+        
+        allQueries.addAll(singleThreadQueries);
+        
+        allQueries.forEach(query->query.setObserver(this));
+        
+        // submits the queries
+        CompletionService<Set<TemporaryEntry>> singleThreadedCompletion = createCompletionServiceAndSubmitQueries(singleThreadQueries, singleThreadedService);
+
+        CompletionService<Set<TemporaryEntry>> multithreadedCompletion = createCompletionServiceAndSubmitQueries(multiThreadedQueries, multithreadedService);
+
+        // waiting for completion of the multithreaded
+        completeQueries(multithreadedCompletion, results, multiThreadedQueries.size());
+
+        // wait for completion of the single threads
+        completeQueries(singleThreadedCompletion, results, singleThreadQueries.size());
+
+        return results;
+    }
+    
+    public void cancel() {
+        allQueries.forEach(AbstractQuery::cancel);
+        multithreadedService.shutdownNow();
+        singleThreadedService.shutdownNow();
+    }
+
+    private CompletionService<Set<TemporaryEntry>> createCompletionServiceAndSubmitQueries(List<AbstractQuery> queries, ExecutorService executorService) {
+        CompletionService<Set<TemporaryEntry>> completionService = new ExecutorCompletionService<>(executorService);
+        return executeQueries(queries,completionService);
+    }
+    private CompletionService<Set<TemporaryEntry>> executeQueries(List<AbstractQuery> queries,CompletionService<Set<TemporaryEntry>> completionService) {
+        for (AbstractQuery query : queries) {
+            completionService.submit(query);
+        }
+        return completionService;
+    }
+    
+    
+    
+
+    private void completeQueries(CompletionService<Set<TemporaryEntry>> completionService, Map<EntryKey, ResultEntry> results, int queryListSize) {
         try {
 
-            for (AbstractQuery query : queries) {
-                Thread.sleep(START_QUERY_INTERVAL);
-                completionService.submit(query);
+            for (int i = 0; i < queryListSize; i++) {
 
-            }
-
-            for (int i = 0; i < queries.size(); i++) {
                 Future<Set<TemporaryEntry>> future = completionService.take();
                 Set<TemporaryEntry> res = future.get();
                 
-                if(res == null) {
+                if (res == null) {
                     throw new RuntimeException("Error when querying server");
                 }
 
-                incrementProgress();
-                for (TemporaryEntry temp : res) {
-                    ResultEntry value = results.get(temp.getKey());
-                    if (value == null) {
-                        // entry not yet in results map, let us create a new one.
-                        value = new ResultEntry(temp.getAllel(), temp.getSequence(), temp.getPosition());
-                        results.put(temp.getKey(), value);
-                    }
-                    value.setScore(temp.getColumn(), temp.getScore());
-                }
+                handleResult(res, results);
             }
-            executor.shutdown();
-            executor.awaitTermination(10, TimeUnit.MINUTES);
 
         } catch (InterruptedException e) {
             ///e.printStackTrace();
@@ -228,26 +266,33 @@ public class QueryJob implements Job {
             error = e;
             logger.error("Exception happened: ", e);
         }
+    }
 
-        return results;
-
+    private void handleResult(Set<TemporaryEntry> res, Map<EntryKey, ResultEntry> results) {
+        for (TemporaryEntry temp : res) {
+            ResultEntry value = results.get(temp.getKey());
+            if (value == null) {
+                // entry not yet in results map, let us create a new one.
+                value = new ResultEntry(temp.getAllel(), temp.getSequence(), temp.getPosition());
+                results.put(temp.getKey(), value);
+            }
+            value.setScore(temp.getColumn(), temp.getScore());
+        }
     }
 
     private List<AbstractQuery> getQueriesforServers(String[] servers, String sequence, String allel, String length) {
         List<AbstractQuery> queries = new ArrayList<AbstractQuery>();
 
-        String[] lengths = length.split(",");
-
         QueryFactory factory = new QueryFactory();
         for (String server : servers) {
-            for (String aLength : lengths) {
-                List<AbstractQuery> newQueries = factory.createQueryForServer(server, sequence, allel, Integer.parseInt(aLength),queryInputType);
-                if (newQueries.size() > 0) {
-                    queries.addAll(newQueries);
-                } else {
-                    logger.error("Query was NULL for server " + server + " and length " + length);
-                }
+
+            List<AbstractQuery> newQueries = factory.createQueryForServer(server, sequence, allel, length, queryInputType);
+            if (newQueries.size() > 0) {
+                queries.addAll(newQueries);
+            } else {
+                logger.error("Query was NULL for server " + server + " and length " + length);
             }
+
         }
         return queries;
     }
@@ -256,9 +301,8 @@ public class QueryJob implements Job {
         List<EntryKey> aSortedEntryList = Util.asSortedList(results.keySet());
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
         // first headers
-        
-        
-        if(!isPeptideQuery()) {
+
+        if (!isPeptideQuery()) {
             writer.append("Position Start");
             writer.append(delimiter);
             writer.append("Region");
@@ -266,17 +310,14 @@ public class QueryJob implements Job {
             writer.append("Length");
             writer.append(delimiter);
         }
-        if(isMultiAllels()) {
+        if (isMultiAllels()) {
             writer.append("Allel");
             writer.append(delimiter);
-                    
+
         }
         writer.append("Sequence");
         writer.append(delimiter);
-        
-        
-        
-        
+
         for (ResultColumn column : getColumnList()) {
             writer.append(column.toString());
             writer.append(delimiter);
@@ -284,7 +325,7 @@ public class QueryJob implements Job {
         writer.newLine();
 
         for (EntryKey anEntry : aSortedEntryList) {
-            if(!isPeptideQuery()) {
+            if (!isPeptideQuery()) {
                 writer.append(String.valueOf(anEntry.getPosition())); // Position Start
                 writer.append(delimiter);
                 writer.append("\"" + String.valueOf(anEntry.getPosition()) + " - " + String.valueOf(anEntry.getPosition() + anEntry.getLength() - 1) + "\""); // Region
@@ -292,7 +333,7 @@ public class QueryJob implements Job {
                 writer.append(String.valueOf(anEntry.getLength())); // Length
                 writer.append(delimiter);
             }
-            if(isMultiAllels()) {
+            if (isMultiAllels()) {
                 writer.append(anEntry.getAllel());
                 writer.append(delimiter);
             }
@@ -335,7 +376,7 @@ public class QueryJob implements Job {
     }
 
     @Override
-    public void setObserver(QueryObserver observer) {
+    public void setObserver(QueryJobObserver observer) {
         this.observer = observer;
     }
 
@@ -366,6 +407,11 @@ public class QueryJob implements Job {
         }
     }
 
+    public int getRunning() {
+        return running;
+    }
+    
+    
     @Override
     public int getProgress() {
         return progress;
@@ -389,6 +435,18 @@ public class QueryJob implements Job {
 
     public String getFileName() {
         return fileName;
+    }
+
+    @Override
+    public void notifyStart(AbstractQuery query) {
+        running++;
+    }
+
+    @Override
+    public void notifyEnd(AbstractQuery query) {
+        incrementProgress();
+        running--;
+
     }
 
 }
