@@ -2,8 +2,8 @@ package backend;
 
 
 import backend.Job;
-import backend.QueryObserver;
 import java.util.logging.Logger;
+import backend.QueryJobObserver;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -15,19 +15,19 @@ import java.util.logging.Logger;
  *
  * @author cyrilmongis
  */
-public class ConsoleQueryObserver implements QueryObserver{
+public class ConsoleQueryObserver implements QueryJobObserver{
 
     final static Logger logger = Logger.getLogger(ConsoleQueryObserver.class.getName());
     
     private final Job job;
-    private final QueryObserver observer;
+    private final QueryJobObserver observer;
     
     public ConsoleQueryObserver(Job job) {
         this.job = job;
         this.observer = null;
     }
     
-    public ConsoleQueryObserver(Job job, QueryObserver obs) {
+    public ConsoleQueryObserver(Job job, QueryJobObserver obs) {
         this.job = job;
         observer = obs;
     }

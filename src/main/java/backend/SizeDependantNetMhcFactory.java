@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 public class SizeDependantNetMhcFactory implements QueryFactoryInterface {
 
     @Override
-    public List<AbstractQuery> createQueryForServer(String server, String sequence, String allel, Integer length, QueryInputType inputType) {
+    public List<AbstractQuery> createQueryForServer(String server, String sequence, String allel, String length, QueryInputType inputType) {
         
         if(inputType == QueryInputType.SEQUENCE) {
             return Arrays.asList(createQuery(server,sequence, allel, length));
@@ -32,16 +32,19 @@ public class SizeDependantNetMhcFactory implements QueryFactoryInterface {
           return Stream
                     .of(sequence.split("[\\s\\n]")) // split the sequence
                     .map(Peptide::new) // create a peptide
-                    .collect(Collectors.groupingBy(peptide->new Integer(peptide.getLength()))) // group the peptides by lenght
+                    .collect(Collectors.groupingBy(peptide->peptide.getLength())) // group the peptides by lenght
                     .entrySet() // map to entry set
                    .stream() // then to stream
-                   .map(set-> createQuery(server,peptideListToInput(set.getValue()), allel, set.getKey())) // key is the length, value is the peptide list
+                   .map(set-> createQuery(server,peptideListToInput(set.getValue()), allel, set.getKey().toString())) // key is the length, value is the peptide list
                    .collect(Collectors.toList());
         }
     }
     
     
-    AbstractQuery createQuery(String server, String sequence, String allel, Integer length) {
+    AbstractQuery createQuery(String server, String sequence, String allel, String lengthStr) {
+        
+        Integer length = Integer.parseInt(lengthStr);
+        
         switch(server) {
             case "NetMHCpan28":
                 return new NetMHCPan28Query(sequence, allel, length);

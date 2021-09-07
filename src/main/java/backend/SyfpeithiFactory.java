@@ -18,7 +18,7 @@ import java.util.List;
 public class SyfpeithiFactory implements QueryFactoryInterface{
 
     @Override
-    public List<AbstractQuery> createQueryForServer(String server, String sequence, String allel, Integer length, QueryInputType inputType) {
+    public List<AbstractQuery> createQueryForServer(String server, String sequence, String allel, String length, QueryInputType inputType) {
         return Arrays.asList(new SyfpeithiQuery(sequence, allel, length));
     }
 

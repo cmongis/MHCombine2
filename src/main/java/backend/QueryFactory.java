@@ -27,29 +27,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class QueryFactory {
-
+ 
     public static final Logger LOGGER = LogManager.getLogger(QueryFactory.class);
 
     List<QueryFactoryInterface> factories = new ArrayList<>();
     
     public QueryFactory() {
-        factories.add(new GenericQueryFactory());
+        factories.add(new MultiLengthFactoryWrapper(new GenericQueryFactory()));
         factories.add(new IedbQueryFactory());
-        factories.add(new MultiAlelleFactoryWrapper(new SyfpeithiFactory()));
+        factories.add(new MultiLengthFactoryWrapper(new MultiAlelleFactoryWrapper(new SyfpeithiFactory())));
     }
     
     //TODO: Transform this factory to return a list of queries
    // public List<AbstractQuery> createQueryForServer(String server, String input, String allel, Integer length) {
    //     return createQueryForServer(server,input,allel,length,QueryInputType.SEQUENCE);
    // }
-    public List<AbstractQuery> createQueryForServer(String server, String sequence, String allel, Integer length,QueryInputType inputType) {
+    public List<AbstractQuery> createQueryForServer(String server, String sequence, String allel, String length,QueryInputType inputType) {
         
         List<AbstractQuery> queries = new ArrayList<>(10);
         
         for(QueryFactoryInterface factory : factories) {
             if(factory.support(server)) {
-                queries.addAll(factory.createQueryForServer(server, sequence, allel, length, inputType));
-                break;
+                List<AbstractQuery> createdQueries = factory.createQueryForServer(server, sequence, allel, length, inputType);
+                if(createdQueries.size() > 0) {
+       
+                    queries.addAll(createdQueries);
+                    break;
+                }
+                else {
+                    LOGGER.warn(String.format("Factory %s proposed support for %s but didn't return any query.",factory.getClass().getSimpleName(),server));
+                    continue;
+                }
             }
         }
         queries.forEach(query->query.setQueryInputType(inputType));

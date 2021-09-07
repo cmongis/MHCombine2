@@ -14,6 +14,6 @@ import java.util.List;
  * @author cyrilmongis
  */
 public interface QueryFactoryInterface {
-       public List<AbstractQuery> createQueryForServer(String server, String sequence, String allel, Integer length,QueryInputType inputType);
+       public List<AbstractQuery> createQueryForServer(String server, String sequence, String allel, String length,QueryInputType inputType);
        public boolean support(String server);
 }

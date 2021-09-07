@@ -18,7 +18,7 @@ public interface Job extends Runnable {
     public void setId(String id);
     
     public String getId();
-    public void setObserver(QueryObserver observer);
+    public void setObserver(QueryJobObserver observer);
     
     
   
@@ -35,7 +35,11 @@ public interface Job extends Runnable {
     
     public int getProgress();
     
+    public int getRunning();
+    
     public int getTotal();
+    
+    public void cancel();
 
     public void clean();
     

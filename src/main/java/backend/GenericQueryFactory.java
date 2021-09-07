@@ -22,16 +22,18 @@ import java.util.List;
 public class GenericQueryFactory implements QueryFactoryInterface{
 
     @Override
-    public List<AbstractQuery> createQueryForServer(String server, String sequence, String allel, Integer length, QueryInputType inputType) {
+    public List<AbstractQuery> createQueryForServer(String server, String sequence, String allel, String lengthStr, QueryInputType inputType) {
          List<AbstractQuery> queries = new ArrayList<>();
         
+         Integer length = Integer.parseInt(lengthStr);
+         
         AbstractQuery query = null;
         switch (server) {
             case "NetMHC40":
                 query =  new NetMHC40Query(sequence, allel, length);
                 break;
             case "NetMHC34":
-                queries.addAll(new SizeDependantNetMhcFactory().createQueryForServer(server, sequence, allel, length, inputType));
+                queries.addAll(new SizeDependantNetMhcFactory().createQueryForServer(server, sequence, allel, lengthStr, inputType));
                 break;
             case "NetMHCpan40":
                 query =  new NetMHCPan40Query(sequence, allel, length);
@@ -43,15 +45,15 @@ public class GenericQueryFactory implements QueryFactoryInterface{
                 query = new NetMHCPan30Query(sequence, allel, length);
                 break;
             case "NetMHCpan28":
-                queries.addAll(new SizeDependantNetMhcFactory().createQueryForServer(server, sequence, allel, length, inputType));
+                queries.addAll(new SizeDependantNetMhcFactory().createQueryForServer(server, sequence, allel, lengthStr, inputType));
                 break;
           
-            case "SYFPEITHI":
-                query = new SyfpeithiQuery(sequence, allel, length);
-                break;
+            //case "SYFPEITHI":
+            //    query = new SyfpeithiQuery(sequence, allel, lengthStr);
+            //    break;
             // Deprecate BIMAS
 //		case "BIMAS":
-//			return new BimasQuery(sequence, allel, length);
+//			return new BimasQuery(sequence, allel, length);      
             default:
                 QueryFactory.LOGGER.warn("Attempted to create query for server " + server + ", no query type found! Returning null.");
                 query = null;
@@ -67,7 +69,7 @@ public class GenericQueryFactory implements QueryFactoryInterface{
 
     @Override
     public boolean support(String server) { 
-        return server.contains("NetMHC");
+        return server.startsWith("NetMHC");
     }
     
 }

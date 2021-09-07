@@ -26,7 +26,7 @@ public class MultiAlelleFactoryWrapper implements QueryFactoryInterface{
     }
 
     @Override
-    public List<AbstractQuery> createQueryForServer(String server, String sequence, String allelList, Integer length, QueryInputType inputType) {
+    public List<AbstractQuery> createQueryForServer(String server, String sequence, String allelList, String length, QueryInputType inputType) {
         
         if(allelList.indexOf(",") > -1) {
             return Stream.of(allelList.split(","))

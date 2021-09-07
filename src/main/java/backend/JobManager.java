@@ -30,7 +30,7 @@ public class JobManager {
 
     private final HashMap<String, Job> jobMap = new HashMap<String, Job>();
 
-    private static final long MAXIMUM_RETENTION_TIME = 1000 * 60 * 10;
+    private static final long MAXIMUM_RETENTION_TIME = 1000 * 60 * 30;
 
     private ExecutorService executor = Executors.newFixedThreadPool(10);
     
@@ -73,7 +73,7 @@ public class JobManager {
     
     public void start(Job job) {
         executor.execute(job);
-    }
+    } 
 
     public void cleanJobs() {
         long now = System.currentTimeMillis();
@@ -88,5 +88,10 @@ public class JobManager {
     
     public void stop() {
         executor.shutdown();
+    }
+
+    void delete(String id) {
+        getJob(id).clean();
+        jobMap.remove(id);
     }
 }
