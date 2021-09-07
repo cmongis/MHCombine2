@@ -65,25 +65,8 @@
             <h4>The MHCcombine WebApp combines up to 13 different MHC class-I binding prediction methods from several prediction servers.</h4>
             With MHCcombine you can simultaneously query several peptide-MHC class-I  binding prediction servers. After submitting a protein sequence and your required peptide specification this tool automatically sends your request to the selected servers for prediction and collects the output in a sortable file of comma-separated values (csv).<br><br>
         </div>
-
-        <div id=formular class="container">
-            <form id="form" action="queryServer" method="POST" enctype="application/x-www-form-urlencoded">
-
-                <b>1) Enter the sequence of your protein of interest in FASTA format or a list of PEPTIDES separated by a new line:</b><br>
-                (maximum 1000 amino acids)<br>
-                <select id="queryInputType"  data-toggle="select" name="queryInputType">
-                    <option value="sequence" selected>SEQUENCE(S)</option>
-                    <option value="peptide">PEPTIDE(S)</option>
-                </select><br><br>
-                <textarea name="seqsub" rows=8 cols=64 class="form-control"></textarea>
-
-                <br>
-
-
-
-                <div id="selectMHC" class="container">
-
-                    <script>
+        
+        <script>
                         function showAllele(inp, divname,event) {
                             // note that the selectedIdx starts at 0, no matter which value you assign to your select...
                             var alleldiv;
@@ -106,8 +89,39 @@
                             alleles.push(event.target.value)
                             alleleListInput.value = alleles.join(",");
                         }
+                        
+                        function onQueryInputChange(event) {
+                            var syfpeithiCheckbox = document.getElementById("syfpeithiCheckbox");
+                            
+                            syfpeithiCheckbox.disabled = event.target.value == "peptide";
+                            if(syfpeithiCheckbox.disabled) {
+                                syfpeithiCheckbox.checked = false;
+                            }
+                            
+                            
+                            
+                        }
 
                     </script>
+
+        <div id=formular class="container">
+            <form id="form" action="queryServer" method="POST" enctype="application/x-www-form-urlencoded">
+
+                <b>1) Enter the sequence of your protein of interest in FASTA format or a list of PEPTIDES separated by a new line:</b><br>
+                (maximum 1000 amino acids)<br>
+                <select id="queryInputType"  data-toggle="select" name="queryInputType" onchange="onQueryInputChange(event)">
+                    <option value="sequence" selected>SEQUENCE(S)</option>
+                    <option value="peptide">PEPTIDE(S)</option>
+                </select><br><br>
+                <textarea name="seqsub" rows=8 cols=64 class="form-control"></textarea>
+
+                <br>
+
+
+
+                <div id="selectMHC" class="container">
+
+                    
 
                     <!-- <!-- <script> -->
                     <!-- // function selectAllele(inp) { -->
@@ -3121,7 +3135,7 @@
                             <input type=checkbox name="server" value="IedbConsensus"> IEDB Consensus<br>
                             <input type=checkbox name="server" value="IedbSmmpmbec"> IEDB SMMPMBEC<br>
                             <input type=checkbox name="server" value="IedbSmm"> IEDB SMM<br>
-                            <input type=checkbox name="server" value="SYFPEITHI"> SYFPEITHI<br>
+                            <input id="syfpeithiCheckbox" type=checkbox name="server" value="SYFPEITHI"> SYFPEITHI<br>
                             <!-- <input type=checkbox name="server" value="BIMAS">BIMAS<br> -->
                         </span>
                     </div>
@@ -3147,7 +3161,7 @@
                     <input id="submitButton" type=button value="Submit" class="btn btn-primary"  style="width:150px">
                     <span style="display:inline-block;width:10px"></span>
                     
-                    <input id="cancelButton" type="button" value="Stop" class="btn btn-primary">
+    
                     <span style="display:inline-block;width:10px"></span>
                    
                    
@@ -3161,7 +3175,7 @@
                      <small style="margin-top:0.5em">Hide unselected methods from the output file</small>
                     </div>
                     
-                    <small><b>Note: </b>completed queries will only be available for 10 Minutes.</small>
+                    <small><b>Note: </b>completed queries will only be available for 30 Minutes.</small>
                      <br>
                     
                     
@@ -3182,6 +3196,9 @@
                 $("#server0 > input[type=checkbox]")
                         .each(function (i, doc) {
                             console.log(doc);
+                            if($(doc).prop("disabled")){
+                                return;
+                            }
                             $(doc).prop("checked", value);
                         });
             }
