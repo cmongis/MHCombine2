@@ -40,7 +40,6 @@ import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -59,88 +58,77 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
 
     protected final String sequence;
     protected final String allel;
-    protected final Integer length;
-
-    private final Algorithm algoritm;
+    protected final String length;
 
     private final Logger logger = Logger.getLogger(this.getClass().getSimpleName());
 
     private final String formDataField;
 
-    private final int TRIAL_LIMIT = 5;
-    private final long RETRY_INTERVAL = 300;
-
-    private final IsEmptyStringPredicate isEmptyPredicate = new IsEmptyStringPredicate();
+    private final int TRIAL_LIMIT = 10;
+    private final long RETRY_INTERVAL = 2000;
 
     private final Set<TemporaryEntry> results = new HashSet<>();
-    
-    
+
     private final static int PEPTIDE_LENGTH_MIN = 8;
     private final static int PEPTIDE_LENGTH_MAX = 14;
+    
 
-    public AbstractIedbQuery(Algorithm algorithm, String formDataField, String sequence, String allel, Integer length) {
+    public AbstractIedbQuery(Algorithm algorithm, String formDataField, String sequence, String allel, String length) {
         this.sequence = sequence;
         this.allel = allel;
         this.length = length;
-        this.algoritm = algorithm;
+        setAlgorithm(algorithm);
         this.formDataField = formDataField;
 
     }
-    
-    
-    
-    
-    protected Set<Integer> findAllDifferentPeptideLengths(){
+
+    protected Set<Integer> findAllDifferentPeptideLengths() {
         return getPeptides()
                 .stream()
                 .mapToInt(Peptide::getLength)
                 .distinct()
-                .filter(i->i >=PEPTIDE_LENGTH_MIN && i <= PEPTIDE_LENGTH_MAX)
+                .filter(i -> i >= PEPTIDE_LENGTH_MIN && i <= PEPTIDE_LENGTH_MAX)
                 .mapToObj(Integer::new)
                 .collect(Collectors.toSet());
     }
-    
-    
+
+    @Override
+    public boolean isSingleThread() {
+        return true;
+    }
 
     protected HttpEntity getFormData(String method) {
 
         List<NameValuePair> formdata = new ArrayList<NameValuePair>();
         formdata.add(new BasicNameValuePair(methodName, method));
-        
 
         String lengthStr = length.toString();
-        
-        String allelStr;
-        
-        String sequence;
-        
 
-        // in a peptide query, only one allel at the time should be checked.
-        if(isPeptideQuery()) {
-            
-            Set<Peptide> peptides = getPeptides();
-            Set<Integer> peptideLengths = findAllDifferentPeptideLengths();
-            
-            sequence = peptides.stream().map(Peptide::getSequence).collect(Collectors.joining("\n"));
-            allelStr = peptideLengths.stream().map(peptide->allel).collect(Collectors.joining(","));
-            lengthStr = peptideLengths.stream().map(length->length.toString()).collect(Collectors.joining(","));
-            
-        }
+        String allelStr;
+
+        String sequence;
+
         
-        // in a sequence query, multiple alleles can be checked at the same time. it's okay
-        else {
-            
-            sequence = this.sequence;
-            allelStr = allel;
-            lengthStr = Stream.of(allel.split(","))
-                    .map(el->length.toString())
-                    .collect(Collectors.joining(","));  
-        }
+       
+        sequence = this.sequence;
         
+  
+        
+        
+        
+        allelStr = allel;   
+        lengthStr = length;
+      
+        
+        log("Preparing request with on \n%s\n\n",sequence);
+        log("Alleles: %s",allelStr);
+        log("Lengths: %s\n",lengthStr);
+
         formdata.add(new BasicNameValuePair(sequenceName, sequence));
         formdata.add(new BasicNameValuePair(alleleName, allelStr));
         formdata.add(new BasicNameValuePair(lengthName, lengthStr));
         UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formdata, Consts.UTF_8);
+        ;
         return entity;
     }
 
@@ -154,63 +142,73 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
 
     public Set<TemporaryEntry> queryServer() {
 
-        CloseableHttpClient client = HttpClients.createSystem();
-
-      
-
-        HttpPost postRequest = new HttpPost(url);
-        HttpEntity entity = getFormData(getFormDataField());
-        postRequest.setEntity(entity);
-
         CloseableHttpResponse response = null;
 
         try {
 
-            logger.info(String.format("POST: %s | %s", url, getFormDataField()));
-            logger.info(entity.toString());
-            response = client.execute(postRequest);
-
             for (int retry = 0; retry != TRIAL_LIMIT; retry++) {
-                if (response.getStatusLine().getStatusCode() == 403) {
-                    logger.warning("Retrying query for " + getAlgorithm().name());
-                    response = client.execute(postRequest);
-                    Thread.sleep(RETRY_INTERVAL);
+
+                
+                if(isCanceled()) {
+                    return new HashSet<>();
                 }
+                
+                CloseableHttpClient client = HttpClients.createSystem();
+
+                HttpPost postRequest = new HttpPost(url);
+                HttpEntity entity = getFormData(getFormDataField());
+
+                postRequest.setEntity(entity);
+
+                log("POST: %s | %s", url, getFormDataField());
+
+                response = client.execute(postRequest);
+
+                log("Response: %s", response.getStatusLine().toString());
+
+                if (response.getStatusLine().getStatusCode() > 204) {
+
+                    forceLog("[%s] returned %d", getAlgorithm().toString(), response.getStatusLine().getStatusCode());
+                    forceLog("Retry %d in %d ms)", retry + 2, RETRY_INTERVAL);
+                    Thread.sleep(RETRY_INTERVAL);
+                    response = client.execute(postRequest);
+
+                } else {
+                    break;
+                }
+                client.close();
+            }
+           
+            System.out.println(response);
+
+            if (response.getStatusLine().getStatusCode() == 403) {
+                String msg = String.format("The IEDB Server keep returning 403 (%s) (%d)", this.getAlgorithm().toString(), RETRY_INTERVAL);
+                logger.severe(msg);
+                throw new IllegalStateException(msg);
             }
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-            String line = null;
+            String line = reader.readLine();
             boolean processing = false;
-            do {
-                line = reader.readLine();
+
+            while (line != null) {
+                log("[OUTPUT] %s", line);
+
                 if (line == null) {
                     break;
                 }
-                System.out.println(line);
-
-                System.out.println(new StringBuilder()
-                        .append("[")
-                        .append(getAlgorithm().name())
-                        .append("] ")
-                        .append(line)
-                        .toString()
-                );
-
                 if (processing) {
                     try {
-                        
-                        
-                        
+
                         for (TemporaryEntry entry : processLine(line)) {
-                            
+
                             // if it's peptide query, we only wants the peptides previously entered
-                            if(isPeptideQuery()) {
+                            if (isPeptideQuery()) {
                                 Peptide peptide = new Peptide((entry.getSequence()));
                                 if (getPeptides().contains(peptide)) {
                                     results.add(entry);
                                 }
-                            }
-                            // otherwise, we want everything
+                            } // otherwise, we want everything
                             else {
                                 results.add(entry);
                             }
@@ -224,7 +222,9 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
                         processing = true;
                     }
                 }
-            } while (true);
+
+                line = reader.readLine();
+            }
 
             EntityUtils.consume(response.getEntity());
         } catch (IOException e) {
@@ -247,10 +247,6 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
 
     }
 
-    public Algorithm getAlgorithm() {
-        return algoritm;
-    }
-
     protected Logger logger() {
         return logger;
     }
@@ -267,20 +263,10 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
         }
         // Line:
         // allele, seq_num, start, end, length, peptide, score, [other stuff]
-        TemporaryEntry entry = new TemporaryEntry(allel, entries[5], Integer.parseInt(entries[2]), getAlgorithm().toColumn(), Double.parseDouble(entries[6]));
+        String alleleStr = entries[0];
+        TemporaryEntry entry = new TemporaryEntry(alleleStr, entries[5], Integer.parseInt(entries[2]), getAlgorithm().toColumn(), Double.parseDouble(entries[6]));
 
         return Arrays.asList(entry);
 
     }
-
-    private class IsEmptyStringPredicate implements Predicate<String> {
-
-        @Override
-        public boolean test(String t) {
-            return t != null && "".equals(t.trim()) == false;
-        }
-    }
-    
-  
-
 }

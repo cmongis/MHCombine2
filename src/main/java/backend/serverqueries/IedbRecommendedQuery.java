@@ -30,7 +30,7 @@ public class IedbRecommendedQuery extends AbstractIedbQuery {
         
        
 	public IedbRecommendedQuery(String sequence, String allel,
-			Integer length) {
+			String length) {
 		super(Algorithm.IedbRecommended,"recommended",sequence, allel, length);
 	}
 

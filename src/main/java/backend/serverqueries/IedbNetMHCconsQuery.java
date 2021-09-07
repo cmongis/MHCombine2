@@ -23,7 +23,7 @@ import backend.entries.Algorithm;
 
 public class IedbNetMHCconsQuery extends AbstractIedbQuery {
 	
-	public IedbNetMHCconsQuery(String sequence, String allel, Integer length) {
+	public IedbNetMHCconsQuery(String sequence, String allel, String length) {
 		super(Algorithm.IedbNetMHCcons,"netmhccons",sequence, allel, length);
 	}
 	

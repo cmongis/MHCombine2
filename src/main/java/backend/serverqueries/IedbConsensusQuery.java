@@ -27,7 +27,7 @@ import java.util.List;
 public class IedbConsensusQuery extends AbstractIedbQuery {
 	
 	
-	public IedbConsensusQuery(String sequence, String allel, Integer length) {
+	public IedbConsensusQuery(String sequence, String allel, String length) {
 		super(Algorithm.IedbConsensus,"consensus",sequence, allel, length);
 	}
 	

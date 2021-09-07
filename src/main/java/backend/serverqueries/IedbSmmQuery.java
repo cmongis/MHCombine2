@@ -25,7 +25,7 @@ public class IedbSmmQuery extends AbstractIedbQuery {
 	
 	
 	
-	public IedbSmmQuery(String sequence, String allel, Integer length) {
+	public IedbSmmQuery(String sequence, String allel, String length) {
 		super(Algorithm.IedbSmm,"smm",sequence, allel, length);
 	}
 

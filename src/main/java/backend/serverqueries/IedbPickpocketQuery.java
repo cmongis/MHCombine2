@@ -24,7 +24,7 @@ import backend.entries.Algorithm;
 public class IedbPickpocketQuery extends AbstractIedbQuery {
 	
 
-	public IedbPickpocketQuery(String sequence, String allel, Integer length) {
+	public IedbPickpocketQuery(String sequence, String allel, String length) {
 		super(Algorithm.IedbPickpocket,"pickpocket",sequence, allel, length);
 	}
 	
