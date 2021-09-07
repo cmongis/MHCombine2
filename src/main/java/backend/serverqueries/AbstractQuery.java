@@ -18,6 +18,7 @@
  */
 package backend.serverqueries;
 
+import backend.QueryObserver;
 import backend.entries.Algorithm;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -38,18 +39,36 @@ public abstract class AbstractQuery implements Callable<Set<TemporaryEntry>> {
     
     public static final List<TemporaryEntry> NO_ENTRY = Arrays.asList();
 
+    private Algorithm algorithm;
+
+    
+    private boolean logging = true;
     
     private Set<Peptide> peptides;
     
     
     private List<Allele> alleleList;
     
+    private boolean canceled = false;
+    
+    private QueryObserver observer;
+
+    
     @Override
     public Set<TemporaryEntry> call() throws Exception {
+        
+        if(canceled) {
+            return new HashSet<>();
+        }
+        
+        notifyStart();
+        
         logger.info("Starting query for " + getClass().getSimpleName());
         Set<TemporaryEntry> queryServer = queryServer();
         int count = queryServer != null ? queryServer.size() : -1;
         logger.info(String.format("End query for %s : %d returned", getClass().getSimpleName(), count));
+        
+        notifyEnd();
         return queryServer;
     }
 
@@ -71,7 +90,24 @@ public abstract class AbstractQuery implements Callable<Set<TemporaryEntry>> {
     protected abstract Set<TemporaryEntry> queryServer();
 
     protected abstract List<TemporaryEntry> processLine(String line);
+
+    public Algorithm getAlgorithm() {
+        return algorithm;
+    }
+
+    public void setAlgorithm(Algorithm algorithm) {
+        this.algorithm = algorithm;
+    }
+
+    public boolean isCanceled() {
+        return canceled;
+    }
     
+    
+    
+    public void cancel() {
+        canceled = true;
+    }
     
     protected boolean isPeptideQuery() {
         return queryInputType == QueryInputType.PEPTIDE;
@@ -102,5 +138,42 @@ public abstract class AbstractQuery implements Callable<Set<TemporaryEntry>> {
                 .map(allele -> Allele.create(allele, algorithm))
                 .collect(Collectors.toList());
     }
+     
+     protected void log(String msg, Object... args) {
+         
+         if(logging) {
+             System.out.println(String.format("[%s]",getAlgorithm())+String.format(msg,args));
+         }
+         
+     }
+     
+     protected void forceLog(String msg, Object... args) {
+         System.out.println(String.format("[%s]",getAlgorithm())+String.format(msg,args));
+     }
+     
+     
+    public boolean isSingleThread() {
+        return false;
+    }
+    
+       public void setObserver(QueryObserver observer) {
+        this.observer = observer;
+    }
+    
+    public void notifyStart() {
+        if(this.observer != null) {
+            observer.notifyStart(this);
+        }
+        
+    }
+    
+    public void notifyEnd() {
+        if(this.observer != null) {
+            observer.notifyEnd(this);
+        }
+    }
+    
+    
+
 
 }

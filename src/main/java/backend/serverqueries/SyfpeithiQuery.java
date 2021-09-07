@@ -59,7 +59,7 @@ public class SyfpeithiQuery extends AbstractQuery {
     private final String sequence;
     private final String originalAllel;
     private final String allel;
-    private final Integer length;
+    private final String length;
 
     // form parameter names & some default values
     private final String sequenceText = "SEQU";
@@ -77,7 +77,7 @@ public class SyfpeithiQuery extends AbstractQuery {
 
     private Set<Peptide> peptides;
     
-    public SyfpeithiQuery(String sequence, String allel, int length) {
+    public SyfpeithiQuery(String sequence, String allel, String length) {
         this.sequence = preprocessFastaSequence(sequence);
         this.originalAllel = allel;
         this.allel = AlleleHelper
@@ -105,7 +105,10 @@ public class SyfpeithiQuery extends AbstractQuery {
         String queryString = URLEncodedUtils.format(params, "utf-8");
         HttpGet getRequest = new HttpGet(baseURL + queryForm + queryString);
         getRequest.setHeader(refererText, refererValue);
-
+        
+        
+        System.out.println(this.sequence);
+        
         CloseableHttpResponse response = null;
         try {
             CloseableHttpClient client = HttpClients.createSystem();
@@ -129,6 +132,7 @@ public class SyfpeithiQuery extends AbstractQuery {
                     break;
                 }
                 line = line.toLowerCase();
+                System.out.println(line);
                 if (processing) {
                     //String[] lines = line.split("</tr>");
                     //for (String entryLine : lines) {
@@ -237,8 +241,9 @@ public class SyfpeithiQuery extends AbstractQuery {
                 currentSequence = currentSequence.replaceAll("&nbsp;", "").replaceAll("</td>", ";").replaceAll("<[^<>]*>", "").toUpperCase().trim();
                 
                 TemporaryEntry entry = new TemporaryEntry(originalAllel, currentSequence, Integer.decode(currentPos), Algorithm.SYFPEITHI.toColumn(), Double.parseDouble(currentScore));
-
                 
+                
+                log("[ENTRY] %s",entry.toString());                
                 // if it's peptide query, we only wants the peptides previously entered
                 if (isPeptideQuery()) {
                     Peptide peptide = new Peptide((entry.getSequence()));
