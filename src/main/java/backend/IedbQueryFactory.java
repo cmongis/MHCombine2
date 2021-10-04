@@ -85,6 +85,7 @@ public class IedbQueryFactory implements QueryFactoryInterface {
                 break;
 
         }
+        query.setQueryInputType(inputType);
         return query;
     }
 
