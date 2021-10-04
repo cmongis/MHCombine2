@@ -256,6 +256,7 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
     }
 
     protected List<TemporaryEntry> processLine(String line) {
+        System.out.println(line);
         String[] entries = line.split("\t");
         if (entries.length < 7) {
             logger().severe("Output line " + line + " contains less than the mandatory 7 entries (allele, seq_num, start, end, length, peptide, ic50), did maybe something change??");
@@ -263,8 +264,16 @@ public abstract class AbstractIedbQuery extends AbstractQuery {
         }
         // Line:
         // allele, seq_num, start, end, length, peptide, score, [other stuff]
-        String alleleStr = entries[0];
-        TemporaryEntry entry = new TemporaryEntry(alleleStr, entries[5], Integer.parseInt(entries[2]), getAlgorithm().toColumn(), Double.parseDouble(entries[6]));
+        String alleleStr = entries[0].trim();
+        String parsedSequence = entries[5].trim();
+        int position = Integer.parseInt(entries[2]);
+        
+        if(isPeptideQuery() && position != 1 ) {
+            return Arrays.asList();
+        }
+
+        double value = Double.parseDouble(entries[6]);
+        TemporaryEntry entry = new TemporaryEntry(alleleStr, parsedSequence, position, getAlgorithm().toColumn(),value);
 
         return Arrays.asList(entry);
 

@@ -42,7 +42,12 @@ public class IedbRecommendedQuery extends AbstractIedbQuery {
 		          
 		// Line:
 		// allele, seq_num, start, end, length, peptide, method, percentile_rank, ann_ic50, ann_rank, smm_ic50, smm_rank, comblib_sidney2008_score, comblib_sidney2008_rank, netmhcpan_ic50, netmhcpan_rank
-		TemporaryEntry entry = new TemporaryEntry(entries[0], entries[5], Integer.parseInt(entries[2]), getAlgorithm().toColumn(), Double.parseDouble(entries[9]));
+		int position = Integer.parseInt(entries[2]);
+                if(isPeptideQuery() && position != 1) {
+                    return Arrays.asList();
+                }
+                
+                TemporaryEntry entry = new TemporaryEntry(entries[0], entries[5],position , getAlgorithm().toColumn(), Double.parseDouble(entries[9]));
 		return Arrays.asList(entry);
 	}
 }

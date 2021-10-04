@@ -52,6 +52,8 @@ public abstract class AbstractQuery implements Callable<Set<TemporaryEntry>> {
     private boolean canceled = false;
     
     private QueryObserver observer;
+    
+    private Set<TemporaryEntry> result;
 
     
     @Override
@@ -69,8 +71,19 @@ public abstract class AbstractQuery implements Callable<Set<TemporaryEntry>> {
         logger.info(String.format("End query for %s : %d returned", getClass().getSimpleName(), count));
         
         notifyEnd();
+        setResult(queryServer);
         return queryServer;
     }
+
+    public void setResult(Set<TemporaryEntry> result) {
+        this.result = result;
+    }
+
+    public Set<TemporaryEntry> getResult() {
+        return result;
+    }
+    
+    
 
     public void setQueryInputType(QueryInputType queryInputType) {
         this.queryInputType = queryInputType;

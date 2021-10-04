@@ -41,9 +41,18 @@ public class IedbConsensusQuery extends AbstractIedbQuery {
 		
                 Double rank = Double.parseDouble(entries[6]);
                 
+                
+                int position =  Integer.parseInt(entries[2]);
+                
+                
+                if(isPeptideQuery() && position != 1) {
+                    return Arrays.asList();
+                }
+                
+                
                 TemporaryEntry entry = new TemporaryEntry(entries[0],
                         entries[5],
-                        Integer.parseInt(entries[2]),
+                       position,
                         getAlgorithm().toColumn(),
                         rank);
 		return Arrays.asList(entry);
