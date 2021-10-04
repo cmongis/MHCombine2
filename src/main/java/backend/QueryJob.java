@@ -129,6 +129,9 @@ public class QueryJob implements Job,QueryObserver {
         observer.setStarted();
 
         Map<EntryKey, ResultEntry> results = createAndExecuteQueries(servers, sequence, allel, len);
+        
+         
+        
         try {
             createCsvFile(results, ";", outputStream);
             outputStream.close();
@@ -143,7 +146,9 @@ public class QueryJob implements Job,QueryObserver {
             if (observer != null) {
                 observer.setFinished();
             }
+            
             finished = true;
+            closeThreads();
         }
 
     }
@@ -218,12 +223,22 @@ public class QueryJob implements Job,QueryObserver {
 
         // wait for completion of the single threads
         completeQueries(singleThreadedCompletion, results, singleThreadQueries.size());
+        
+        allQueries
+                .stream()
+                .filter(query->query.getResult()!= null)
+                .forEach(query->handleResult(query.getResult(), results));
 
         return results;
     }
     
     public void cancel() {
         allQueries.forEach(AbstractQuery::cancel);
+        closeThreads();
+
+    }
+    
+    private void closeThreads() {
         multithreadedService.shutdownNow();
         singleThreadedService.shutdownNow();
     }
@@ -254,7 +269,7 @@ public class QueryJob implements Job,QueryObserver {
                     throw new RuntimeException("Error when querying server");
                 }
 
-                handleResult(res, results);
+              
             }
 
         } catch (InterruptedException e) {
@@ -302,7 +317,7 @@ public class QueryJob implements Job,QueryObserver {
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"));
         // first headers
 
-        if (!isPeptideQuery()) {
+      if (!isPeptideQuery()) {
             writer.append("Position Start");
             writer.append(delimiter);
             writer.append("Region");
@@ -327,7 +342,7 @@ public class QueryJob implements Job,QueryObserver {
         for (EntryKey anEntry : aSortedEntryList) {
             if (!isPeptideQuery()) {
                 writer.append(String.valueOf(anEntry.getPosition())); // Position Start
-                writer.append(delimiter);
+                writer.append(delimiter);      
                 writer.append("\"" + String.valueOf(anEntry.getPosition()) + " - " + String.valueOf(anEntry.getPosition() + anEntry.getLength() - 1) + "\""); // Region
                 writer.append(delimiter);
                 writer.append(String.valueOf(anEntry.getLength())); // Length
